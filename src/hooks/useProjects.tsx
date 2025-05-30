@@ -69,8 +69,8 @@ export const useProjects = () => {
           escopo: project.escopo,
           objetivos: project.objetivos,
           etapas_executadas: project.etapasExecutadas,
-          proximas_etapas: project.proximasEtapas,
-          cronograma: project.cronograma,
+          proximas_etapas: project.proximasEtapas as any,
+          cronograma: project.cronograma as any,
           pontos_atencao: project.pontosAtencao,
           estrategico_tatico: project.estrategicoTatico,
           user_id: user.id
@@ -109,8 +109,8 @@ export const useProjects = () => {
           escopo: project.escopo,
           objetivos: project.objetivos,
           etapas_executadas: project.etapasExecutadas,
-          proximas_etapas: project.proximasEtapas,
-          cronograma: project.cronograma,
+          proximas_etapas: project.proximasEtapas as any,
+          cronograma: project.cronograma as any,
           pontos_atencao: project.pontosAtencao,
           estrategico_tatico: project.estrategicoTatico,
           updated_at: new Date().toISOString()
