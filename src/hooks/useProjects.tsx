@@ -28,12 +28,12 @@ export const useProjects = () => {
         productOwner: projeto.product_owner || '',
         gerenteProjetos: projeto.gerente_projetos || '',
         liderProjetosTI: projeto.lider_projetos_ti || '',
-        escopo: projeto.escopo || [],
-        objetivos: projeto.objetivos || [],
-        etapasExecutadas: projeto.etapas_executadas || [],
-        proximasEtapas: projeto.proximas_etapas || [],
-        cronograma: projeto.cronograma || [],
-        pontosAtencao: projeto.pontos_atencao || [],
+        escopo: Array.isArray(projeto.escopo) ? projeto.escopo as string[] : [],
+        objetivos: Array.isArray(projeto.objetivos) ? projeto.objetivos as string[] : [],
+        etapasExecutadas: Array.isArray(projeto.etapas_executadas) ? projeto.etapas_executadas as string[] : [],
+        proximasEtapas: Array.isArray(projeto.proximas_etapas) ? projeto.proximas_etapas as any[] : [],
+        cronograma: Array.isArray(projeto.cronograma) ? projeto.cronograma as any[] : [],
+        pontosAtencao: Array.isArray(projeto.pontos_atencao) ? projeto.pontos_atencao as string[] : [],
         estrategicoTatico: projeto.estrategico_tatico as 'Estratégico' | 'Tático'
       }));
 
