@@ -69,9 +69,7 @@ export const AuthPage = () => {
               IT Project HUB
             </h1>
           </div>
-          <CardTitle className="text-xl text-gray-700 mt-4">
-            {isLogin ? 'Entrar' : 'Criar Conta'}
-          </CardTitle>
+          
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
