@@ -4,55 +4,31 @@ import { ProjectOverview } from '@/components/ProjectOverview';
 import { ProjectDetail } from '@/components/ProjectDetail';
 import { ProjectReport } from '@/components/ProjectReport';
 import { ProjectDashboard } from '@/components/ProjectDashboard';
+import { ProjectHeader } from '@/components/ProjectHeader';
+import { AuthPage } from '@/components/auth/AuthPage';
+import { useAuth } from '@/hooks/useAuth';
+import { useProjects } from '@/hooks/useProjects';
 import { Project } from '@/types/project';
 
 type ViewMode = 'overview' | 'detail' | 'report' | 'dashboard';
 
 const Index = () => {
+  const { user, loading: authLoading } = useAuth();
+  const { projects, loading: projectsLoading, createProject, updateProject, deleteProject } = useProjects();
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: '1',
-      nome: 'Sistema ERP Financeiro',
-      areaNegocio: 'Financeiro',
-      inovacaoMelhoria: 'Inovação',
-      timeTI: 'Projetos',
-      sponsor: 'João Silva',
-      productOwner: 'Maria Santos',
-      gerenteProjetos: 'Carlos Lima',
-      liderProjetosTI: 'Ana Costa',
-      escopo: ['Módulo de contas a pagar', 'Módulo de contas a receber', 'Relatórios financeiros'],
-      objetivos: ['Automatizar processos financeiros', 'Reduzir tempo de fechamento mensal'],
-      etapasExecutadas: ['Levantamento de requisitos', 'Análise de viabilidade'],
-      proximasEtapas: [
-        { atividade: 'Desenvolvimento do módulo', responsavel: 'Equipe Dev', previsao: '2024-02-15' }
-      ],
-      cronograma: [
-        {
-          etapa: 'Análise e Planejamento',
-          inicio: '2024-01-01',
-          fim: '2024-01-31',
-          percentualPrevisto: 100,
-          percentualRealizado: 100
-        },
-        {
-          etapa: 'Desenvolvimento',
-          inicio: '2024-02-01',
-          fim: '2024-04-30',
-          percentualPrevisto: 60,
-          percentualRealizado: 45
-        }
-      ],
-      pontosAtencao: ['Dependência de aprovação orçamentária', 'Recursos limitados'],
-      estrategicoTatico: 'Estratégico'
-    }
-  ]);
 
-  const updateProject = (updatedProject: Project) => {
-    setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
-    setSelectedProject(updatedProject);
-  };
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-lg">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthPage />;
+  }
 
   const handleSelectProject = (project: Project) => {
     setSelectedProject(project);
@@ -73,42 +49,84 @@ const Index = () => {
     setSelectedProject(null);
   };
 
+  const handleCreateProject = async () => {
+    const newProject: Omit<Project, 'id'> = {
+      nome: 'Novo Projeto',
+      areaNegocio: '',
+      inovacaoMelhoria: 'Melhoria',
+      timeTI: '',
+      sponsor: '',
+      productOwner: '',
+      gerenteProjetos: '',
+      liderProjetosTI: '',
+      escopo: [],
+      objetivos: [],
+      etapasExecutadas: [],
+      proximasEtapas: [],
+      cronograma: [],
+      pontosAtencao: [],
+      estrategicoTatico: 'Tático'
+    };
+    
+    try {
+      await createProject(newProject);
+      // O projeto será automaticamente adicionado à lista via fetchProjects
+    } catch (error) {
+      console.error('Erro ao criar projeto:', error);
+    }
+  };
+
   if (viewMode === 'detail' && selectedProject) {
     return (
-      <ProjectDetail 
-        project={selectedProject} 
-        onBack={handleBack}
-        onUpdate={updateProject}
-      />
+      <div>
+        <ProjectHeader />
+        <ProjectDetail 
+          project={selectedProject} 
+          onBack={handleBack}
+          onUpdate={updateProject}
+        />
+      </div>
     );
   }
 
   if (viewMode === 'report' && selectedProject) {
     return (
-      <ProjectReport
-        project={selectedProject}
-        onBack={handleBack}
-      />
+      <div>
+        <ProjectHeader />
+        <ProjectReport
+          project={selectedProject}
+          onBack={handleBack}
+        />
+      </div>
     );
   }
 
   if (viewMode === 'dashboard') {
     return (
-      <ProjectDashboard
-        projects={projects}
-        onBack={handleBack}
-      />
+      <div>
+        <ProjectHeader />
+        <ProjectDashboard
+          projects={projects}
+          onBack={handleBack}
+        />
+      </div>
     );
   }
 
   return (
-    <ProjectOverview 
-      projects={projects} 
-      onSelectProject={handleSelectProject}
-      onUpdateProjects={setProjects}
-      onShowReport={handleShowReport}
-      onShowDashboard={handleShowDashboard}
-    />
+    <div>
+      <ProjectHeader />
+      <ProjectOverview 
+        projects={projects} 
+        onSelectProject={handleSelectProject}
+        onUpdateProjects={() => {}} // Não usado mais, useProjects gerencia o estado
+        onShowReport={handleShowReport}
+        onShowDashboard={handleShowDashboard}
+        onCreateProject={handleCreateProject}
+        onDeleteProject={deleteProject}
+        loading={projectsLoading}
+      />
+    </div>
   );
 };
 

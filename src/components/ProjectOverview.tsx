@@ -22,45 +22,24 @@ interface ProjectOverviewProps {
   onUpdateProjects: (projects: Project[]) => void;
   onShowReport: (project: Project) => void;
   onShowDashboard: () => void;
+  onCreateProject: () => void;
+  onDeleteProject: (projectId: string) => void;
+  loading: boolean;
 }
 
 export const ProjectOverview: React.FC<ProjectOverviewProps> = ({ 
   projects, 
   onSelectProject,
-  onUpdateProjects,
   onShowReport,
-  onShowDashboard
+  onShowDashboard,
+  onCreateProject,
+  onDeleteProject,
+  loading
 }) => {
-  const createNewProject = () => {
-    const newProject: Project = {
-      id: Date.now().toString(),
-      nome: 'Novo Projeto',
-      areaNegocio: '',
-      inovacaoMelhoria: 'Melhoria',
-      timeTI: '',
-      sponsor: '',
-      productOwner: '',
-      gerenteProjetos: '',
-      liderProjetosTI: '',
-      escopo: [],
-      objetivos: [],
-      etapasExecutadas: [],
-      proximasEtapas: [],
-      cronograma: [],
-      pontosAtencao: [],
-      estrategicoTatico: 'Tático'
-    };
-    
-    const updatedProjects = [...projects, newProject];
-    onUpdateProjects(updatedProjects);
-    onSelectProject(newProject);
-  };
-
   const deleteProject = (projectId: string, event: React.MouseEvent) => {
     event.stopPropagation();
     if (confirm('Tem certeza que deseja excluir este projeto?')) {
-      const updatedProjects = projects.filter(p => p.id !== projectId);
-      onUpdateProjects(updatedProjects);
+      onDeleteProject(projectId);
     }
   };
 
@@ -68,6 +47,14 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
     event.stopPropagation();
     onShowReport(project);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-lg">Carregando projetos...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -79,7 +66,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               <PieChart className="h-4 w-4" />
               Painel de Gráficos
             </Button>
-            <Button onClick={createNewProject} className="flex items-center gap-2">
+            <Button onClick={onCreateProject} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Novo Projeto
             </Button>

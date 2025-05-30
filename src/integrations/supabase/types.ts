@@ -9,7 +9,96 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          nome: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id: string
+          nome?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          nome?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      projetos: {
+        Row: {
+          area_negocio: string | null
+          created_at: string | null
+          cronograma: Json | null
+          escopo: Json | null
+          estrategico_tatico: string | null
+          etapas_executadas: Json | null
+          gerente_projetos: string | null
+          id: string
+          inovacao_melhoria: string | null
+          lider_projetos_ti: string | null
+          nome: string
+          objetivos: Json | null
+          pontos_atencao: Json | null
+          product_owner: string | null
+          proximas_etapas: Json | null
+          sponsor: string | null
+          time_ti: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          area_negocio?: string | null
+          created_at?: string | null
+          cronograma?: Json | null
+          escopo?: Json | null
+          estrategico_tatico?: string | null
+          etapas_executadas?: Json | null
+          gerente_projetos?: string | null
+          id?: string
+          inovacao_melhoria?: string | null
+          lider_projetos_ti?: string | null
+          nome: string
+          objetivos?: Json | null
+          pontos_atencao?: Json | null
+          product_owner?: string | null
+          proximas_etapas?: Json | null
+          sponsor?: string | null
+          time_ti?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          area_negocio?: string | null
+          created_at?: string | null
+          cronograma?: Json | null
+          escopo?: Json | null
+          estrategico_tatico?: string | null
+          etapas_executadas?: Json | null
+          gerente_projetos?: string | null
+          id?: string
+          inovacao_melhoria?: string | null
+          lider_projetos_ti?: string | null
+          nome?: string
+          objetivos?: Json | null
+          pontos_atencao?: Json | null
+          product_owner?: string | null
+          proximas_etapas?: Json | null
+          sponsor?: string | null
+          time_ti?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
