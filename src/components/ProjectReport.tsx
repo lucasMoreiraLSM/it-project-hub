@@ -1,0 +1,224 @@
+
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Project } from '@/types/project';
+import { 
+  calculatePercentualPrevisto, 
+  calculatePercentualRealizado, 
+  calculateDesvio,
+  getFarolStatus,
+  getDiasNaEtapa,
+  getStatusCronograma
+} from '@/utils/projectCalculations';
+import { ArrowLeft } from 'lucide-react';
+
+interface ProjectReportProps {
+  project: Project;
+  onBack: () => void;
+}
+
+export const ProjectReport: React.FC<ProjectReportProps> = ({ project, onBack }) => {
+  const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
+  const percentualRealizado = calculatePercentualRealizado(project.cronograma);
+  const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
+  const farol = getFarolStatus(desvio);
+
+  const getFarolColor = (status: string) => {
+    switch (status) {
+      case 'Verde': return 'bg-green-500';
+      case 'Amarelo': return 'bg-yellow-500';
+      case 'Vermelho': return 'bg-red-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Button>
+          <h1 className="text-3xl font-bold text-gray-900">Relatório do Projeto</h1>
+        </div>
+
+        <div className="space-y-6">
+          {/* Dados do Projeto */}
+          <Card>
+            <CardHeader>
+              <CardTitle>📌 Dados do Projeto</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <strong>Nome do Projeto:</strong> {project.nome}
+                </div>
+                <div>
+                  <strong>Área de Negócio:</strong> {project.areaNegocio}
+                </div>
+                <div>
+                  <strong>Tipo:</strong> 
+                  <Badge variant={project.inovacaoMelhoria === 'Inovação' ? 'default' : 'secondary'} className="ml-2">
+                    {project.inovacaoMelhoria}
+                  </Badge>
+                </div>
+                <div>
+                  <strong>Time TI:</strong> {project.timeTI}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <div className="text-sm font-medium text-gray-600">% Previsto</div>
+                  <div className="text-2xl font-bold text-blue-600">{percentualPrevisto}%</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-600">% Realizado</div>
+                  <div className="text-2xl font-bold text-green-600">{percentualRealizado}%</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-600">% Desvio</div>
+                  <div className={`text-2xl font-bold ${desvio >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {desvio > 0 ? '+' : ''}{desvio}%
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-600">Farol</div>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-4 h-4 rounded-full ${getFarolColor(farol)}`}></div>
+                    <span className="font-medium">{farol}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <strong>Sponsor:</strong> {project.sponsor}
+                </div>
+                <div>
+                  <strong>Product Owner:</strong> {project.productOwner}
+                </div>
+                <div>
+                  <strong>Gerente de Projetos:</strong> {project.gerenteProjetos}
+                </div>
+                <div>
+                  <strong>Líder Projetos TI:</strong> {project.liderProjetosTI}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Cronograma de Atividades Macro */}
+          <Card>
+            <CardHeader>
+              <CardTitle>📊 Cronograma de Atividades Macro</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-200">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="border border-gray-200 p-2 text-left">Etapa</th>
+                      <th className="border border-gray-200 p-2 text-left">Início</th>
+                      <th className="border border-gray-200 p-2 text-left">Fim</th>
+                      <th className="border border-gray-200 p-2 text-left">Status</th>
+                      <th className="border border-gray-200 p-2 text-left">% Previsto</th>
+                      <th className="border border-gray-200 p-2 text-left">% Realizado</th>
+                      <th className="border border-gray-200 p-2 text-left">Dias na Etapa</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {project.cronograma.map((item, index) => {
+                      const diasNaEtapa = getDiasNaEtapa(item.inicio);
+                      const status = getStatusCronograma(item);
+
+                      return (
+                        <tr key={index}>
+                          <td className="border border-gray-200 p-2">{item.etapa}</td>
+                          <td className="border border-gray-200 p-2">
+                            {new Date(item.inicio).toLocaleDateString('pt-BR')}
+                          </td>
+                          <td className="border border-gray-200 p-2">
+                            {new Date(item.fim).toLocaleDateString('pt-BR')}
+                          </td>
+                          <td className="border border-gray-200 p-2">
+                            <Badge variant={
+                              status === 'Concluído' ? 'default' : 
+                              status === 'Atrasado' ? 'destructive' : 
+                              status === 'Em Andamento' ? 'secondary' : 'outline'
+                            }>
+                              {status}
+                            </Badge>
+                          </td>
+                          <td className="border border-gray-200 p-2 text-center">{item.percentualPrevisto}%</td>
+                          <td className="border border-gray-200 p-2 text-center">{item.percentualRealizado}%</td>
+                          <td className="border border-gray-200 p-2 text-center">{diasNaEtapa}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Etapas Executadas */}
+          <Card>
+            <CardHeader>
+              <CardTitle>✅ Etapas Executadas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {project.etapasExecutadas.length > 0 ? (
+                <ul className="list-disc list-inside space-y-1">
+                  {project.etapasExecutadas.map((etapa, index) => (
+                    <li key={index} className="text-gray-700">{etapa}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500">Nenhuma etapa executada</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Próximas Etapas */}
+          <Card>
+            <CardHeader>
+              <CardTitle>🗓️ Próximas Etapas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {project.proximasEtapas.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-200">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="border border-gray-200 p-2 text-left">Atividade</th>
+                        <th className="border border-gray-200 p-2 text-left">Responsável</th>
+                        <th className="border border-gray-200 p-2 text-left">Previsão</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {project.proximasEtapas.map((etapa, index) => (
+                        <tr key={index}>
+                          <td className="border border-gray-200 p-2">{etapa.atividade}</td>
+                          <td className="border border-gray-200 p-2">{etapa.responsavel}</td>
+                          <td className="border border-gray-200 p-2">
+                            {new Date(etapa.previsao).toLocaleDateString('pt-BR')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-gray-500">Nenhuma próxima etapa definida</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};

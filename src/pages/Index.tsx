@@ -2,10 +2,15 @@
 import React, { useState } from 'react';
 import { ProjectOverview } from '@/components/ProjectOverview';
 import { ProjectDetail } from '@/components/ProjectDetail';
+import { ProjectReport } from '@/components/ProjectReport';
+import { ProjectDashboard } from '@/components/ProjectDashboard';
 import { Project } from '@/types/project';
+
+type ViewMode = 'overview' | 'detail' | 'report' | 'dashboard';
 
 const Index = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('overview');
   const [projects, setProjects] = useState<Project[]>([
     {
       id: '1',
@@ -49,12 +54,49 @@ const Index = () => {
     setSelectedProject(updatedProject);
   };
 
-  if (selectedProject) {
+  const handleSelectProject = (project: Project) => {
+    setSelectedProject(project);
+    setViewMode('detail');
+  };
+
+  const handleShowReport = (project: Project) => {
+    setSelectedProject(project);
+    setViewMode('report');
+  };
+
+  const handleShowDashboard = () => {
+    setViewMode('dashboard');
+  };
+
+  const handleBack = () => {
+    setViewMode('overview');
+    setSelectedProject(null);
+  };
+
+  if (viewMode === 'detail' && selectedProject) {
     return (
       <ProjectDetail 
         project={selectedProject} 
-        onBack={() => setSelectedProject(null)}
+        onBack={handleBack}
         onUpdate={updateProject}
+      />
+    );
+  }
+
+  if (viewMode === 'report' && selectedProject) {
+    return (
+      <ProjectReport
+        project={selectedProject}
+        onBack={handleBack}
+      />
+    );
+  }
+
+  if (viewMode === 'dashboard') {
+    return (
+      <ProjectDashboard
+        projects={projects}
+        onBack={handleBack}
       />
     );
   }
@@ -62,8 +104,10 @@ const Index = () => {
   return (
     <ProjectOverview 
       projects={projects} 
-      onSelectProject={setSelectedProject}
+      onSelectProject={handleSelectProject}
       onUpdateProjects={setProjects}
+      onShowReport={handleShowReport}
+      onShowDashboard={handleShowDashboard}
     />
   );
 };

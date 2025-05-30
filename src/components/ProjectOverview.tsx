@@ -14,18 +14,22 @@ import {
   getStatusGeral,
   getDataFimPrevista
 } from '@/utils/projectCalculations';
-import { BarChart, Plus } from 'lucide-react';
+import { BarChart, Plus, Trash2, PieChart } from 'lucide-react';
 
 interface ProjectOverviewProps {
   projects: Project[];
   onSelectProject: (project: Project) => void;
   onUpdateProjects: (projects: Project[]) => void;
+  onShowReport: (project: Project) => void;
+  onShowDashboard: () => void;
 }
 
 export const ProjectOverview: React.FC<ProjectOverviewProps> = ({ 
   projects, 
   onSelectProject,
-  onUpdateProjects 
+  onUpdateProjects,
+  onShowReport,
+  onShowDashboard
 }) => {
   const createNewProject = () => {
     const newProject: Project = {
@@ -52,15 +56,34 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
     onSelectProject(newProject);
   };
 
+  const deleteProject = (projectId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (confirm('Tem certeza que deseja excluir este projeto?')) {
+      const updatedProjects = projects.filter(p => p.id !== projectId);
+      onUpdateProjects(updatedProjects);
+    }
+  };
+
+  const showReport = (project: Project, event: React.MouseEvent) => {
+    event.stopPropagation();
+    onShowReport(project);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Visão Geral dos Projetos</h1>
-          <Button onClick={createNewProject} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Novo Projeto
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={onShowDashboard} variant="outline" className="flex items-center gap-2">
+              <PieChart className="h-4 w-4" />
+              Painel de Gráficos
+            </Button>
+            <Button onClick={createNewProject} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Novo Projeto
+            </Button>
+          </div>
         </div>
 
         <Card>
@@ -140,10 +163,25 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                           </Badge>
                         </td>
                         <td className="p-3 border-b">
-                          <Button variant="outline" size="sm" className="flex items-center gap-1">
-                            <BarChart className="h-3 w-3" />
-                            Gráficos
-                          </Button>
+                          <div className="flex gap-1">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="flex items-center gap-1"
+                              onClick={(e) => showReport(project, e)}
+                            >
+                              <BarChart className="h-3 w-3" />
+                              Gráficos
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                              onClick={(e) => deleteProject(project.id, e)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );
