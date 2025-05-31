@@ -3,7 +3,6 @@ import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Project } from '@/types/project';
 import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getStatusProjeto, getStatusOrcamento, getStatusOrcamentoColor, getStatusGeral, getDataFimPrevista } from '@/utils/projectCalculations';
 import { BarChart, Plus, Trash2, PieChart, Filter, X } from 'lucide-react';
@@ -139,7 +138,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
         </div>
 
         {showFilters && (
-          <Card className="mb-6 bg-white border shadow-sm relative z-10">
+          <Card className="mb-6 bg-white border border-gray-200 shadow-sm">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Filtros</CardTitle>
@@ -158,103 +157,83 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div className="relative">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Líder Projeto TI
                   </label>
-                  <Select 
+                  <select 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={filters.liderProjeto} 
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, liderProjeto: value }))}
+                    onChange={(e) => setFilters(prev => ({ ...prev, liderProjeto: e.target.value }))}
                   >
-                    <SelectTrigger className="relative z-50">
-                      <SelectValue placeholder="Todos" />
-                    </SelectTrigger>
-                    <SelectContent className="relative z-50 bg-white border shadow-lg">
-                      <SelectItem value="">Todos</SelectItem>
-                      {filterOptions.lideresProjeto.map(lider => (
-                        <SelectItem key={lider} value={lider}>{lider}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <option value="">Todos</option>
+                    {filterOptions.lideresProjeto.map(lider => (
+                      <option key={lider} value={lider}>{lider}</option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="relative">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Gerente de Projetos
                   </label>
-                  <Select 
+                  <select 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={filters.gerenteProjetos} 
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, gerenteProjetos: value }))}
+                    onChange={(e) => setFilters(prev => ({ ...prev, gerenteProjetos: e.target.value }))}
                   >
-                    <SelectTrigger className="relative z-50">
-                      <SelectValue placeholder="Todos" />
-                    </SelectTrigger>
-                    <SelectContent className="relative z-50 bg-white border shadow-lg">
-                      <SelectItem value="">Todos</SelectItem>
-                      {filterOptions.gerentesProjetos.map(gerente => (
-                        <SelectItem key={gerente} value={gerente}>{gerente}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <option value="">Todos</option>
+                    {filterOptions.gerentesProjetos.map(gerente => (
+                      <option key={gerente} value={gerente}>{gerente}</option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="relative">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Tipo
                   </label>
-                  <Select 
+                  <select 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={filters.inovacaoMelhoria} 
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, inovacaoMelhoria: value }))}
+                    onChange={(e) => setFilters(prev => ({ ...prev, inovacaoMelhoria: e.target.value }))}
                   >
-                    <SelectTrigger className="relative z-50">
-                      <SelectValue placeholder="Todos" />
-                    </SelectTrigger>
-                    <SelectContent className="relative z-50 bg-white border shadow-lg">
-                      <SelectItem value="">Todos</SelectItem>
-                      <SelectItem value="Inovação">Inovação</SelectItem>
-                      <SelectItem value="Melhoria">Melhoria</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <option value="">Todos</option>
+                    <option value="Inovação">Inovação</option>
+                    <option value="Melhoria">Melhoria</option>
+                  </select>
                 </div>
 
-                <div className="relative">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Status do Projeto
                   </label>
-                  <Select 
+                  <select 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={filters.statusProjeto} 
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, statusProjeto: value }))}
+                    onChange={(e) => setFilters(prev => ({ ...prev, statusProjeto: e.target.value }))}
                   >
-                    <SelectTrigger className="relative z-50">
-                      <SelectValue placeholder="Todos" />
-                    </SelectTrigger>
-                    <SelectContent className="relative z-50 bg-white border shadow-lg">
-                      <SelectItem value="">Todos</SelectItem>
-                      <SelectItem value="green">Verde (No prazo)</SelectItem>
-                      <SelectItem value="yellow">Amarelo (Atenção)</SelectItem>
-                      <SelectItem value="red">Vermelho (Atrasado)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <option value="">Todos</option>
+                    <option value="green">Verde (No prazo)</option>
+                    <option value="yellow">Amarelo (Atenção)</option>
+                    <option value="red">Vermelho (Atrasado)</option>
+                  </select>
                 </div>
 
-                <div className="relative">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Time TI
                   </label>
-                  <Select 
+                  <select 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={filters.timeTI} 
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, timeTI: value }))}
+                    onChange={(e) => setFilters(prev => ({ ...prev, timeTI: e.target.value }))}
                   >
-                    <SelectTrigger className="relative z-50">
-                      <SelectValue placeholder="Todos" />
-                    </SelectTrigger>
-                    <SelectContent className="relative z-50 bg-white border shadow-lg">
-                      <SelectItem value="">Todos</SelectItem>
-                      {filterOptions.timesTI.map(time => (
-                        <SelectItem key={time} value={time}>{time}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <option value="">Todos</option>
+                    {filterOptions.timesTI.map(time => (
+                      <option key={time} value={time}>{time}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </CardContent>
