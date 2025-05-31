@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Project } from '@/types/project';
 import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getStatusProjeto, getStatusOrcamento, getStatusOrcamentoColor, getStatusGeral, getDataFimPrevista } from '@/utils/projectCalculations';
 import { BarChart, Plus, Trash2, PieChart, Filter, X } from 'lucide-react';
+
 interface ProjectOverviewProps {
   projects: Project[];
   onSelectProject: (project: Project) => void;
@@ -16,6 +18,7 @@ interface ProjectOverviewProps {
   onDeleteProject: (projectId: string) => void;
   loading: boolean;
 }
+
 interface Filters {
   liderProjeto: string;
   gerenteProjetos: string;
@@ -23,6 +26,7 @@ interface Filters {
   statusProjeto: string;
   timeTI: string;
 }
+
 export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   projects,
   onSelectProject,
@@ -46,6 +50,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
     const lideresProjeto = [...new Set(projects.map(p => p.liderProjetosTI).filter(Boolean))];
     const gerentesProjetos = [...new Set(projects.map(p => p.gerenteProjetos).filter(Boolean))];
     const timesTI = [...new Set(projects.map(p => p.timeTI).filter(Boolean))];
+    
     return {
       lideresProjeto,
       gerentesProjetos,
@@ -60,14 +65,17 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
       const percentualRealizado = calculatePercentualRealizado(project.cronograma);
       const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
       const statusProjeto = getStatusProjeto(desvio);
+      
       if (filters.liderProjeto && project.liderProjetosTI !== filters.liderProjeto) return false;
       if (filters.gerenteProjetos && project.gerenteProjetos !== filters.gerenteProjetos) return false;
       if (filters.inovacaoMelhoria && project.inovacaoMelhoria !== filters.inovacaoMelhoria) return false;
       if (filters.statusProjeto && statusProjeto !== filters.statusProjeto) return false;
       if (filters.timeTI && project.timeTI !== filters.timeTI) return false;
+      
       return true;
     });
   }, [projects, filters]);
+
   const clearAllFilters = () => {
     setFilters({
       liderProjeto: '',
@@ -77,33 +85,47 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
       timeTI: ''
     });
   };
+
   const hasActiveFilters = Object.values(filters).some(filter => filter !== '');
+
   const deleteProject = (projectId: string, event: React.MouseEvent) => {
     event.stopPropagation();
     if (confirm('Tem certeza que deseja excluir este projeto?')) {
       onDeleteProject(projectId);
     }
   };
+
   const showReport = (project: Project, event: React.MouseEvent) => {
     event.stopPropagation();
     onShowReport(project);
   };
+
   if (loading) {
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-lg">Carregando projetos...</div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="min-h-screen bg-gray-50 p-6">
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Visão Geral dos Projetos</h1>
           <div className="flex gap-2">
-            <Button onClick={() => setShowFilters(!showFilters)} variant="outline" className="flex items-center gap-2">
+            <Button 
+              onClick={() => setShowFilters(!showFilters)} 
+              variant="outline" 
+              className="flex items-center gap-2"
+            >
               <Filter className="h-4 w-4" />
               Filtros
-              {hasActiveFilters && <Badge variant="secondary" className="ml-1">
+              {hasActiveFilters && (
+                <Badge variant="secondary" className="ml-1">
                   {Object.values(filters).filter(f => f !== '').length}
-                </Badge>}
+                </Badge>
+              )}
             </Button>
             <Button onClick={onShowDashboard} variant="outline" className="flex items-center gap-2">
               <PieChart className="h-4 w-4" />
@@ -116,66 +138,78 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
           </div>
         </div>
 
-        {showFilters && <Card className="mb-6">
+        {showFilters && (
+          <Card className="mb-6 bg-white border shadow-sm relative z-10">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Filtros</CardTitle>
-                {hasActiveFilters && <Button onClick={clearAllFilters} variant="outline" size="sm" className="flex items-center gap-2">
+                {hasActiveFilters && (
+                  <Button 
+                    onClick={clearAllFilters} 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center gap-2"
+                  >
                     <X className="h-3 w-3" />
                     Limpar Filtros
-                  </Button>}
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Líder Projeto TI
                   </label>
-                  <Select value={filters.liderProjeto} onValueChange={value => setFilters(prev => ({
-                ...prev,
-                liderProjeto: value
-              }))}>
-                    <SelectTrigger>
+                  <Select 
+                    value={filters.liderProjeto} 
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, liderProjeto: value }))}
+                  >
+                    <SelectTrigger className="relative z-50">
                       <SelectValue placeholder="Todos" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="relative z-50 bg-white border shadow-lg">
                       <SelectItem value="">Todos</SelectItem>
-                      {filterOptions.lideresProjeto.map(lider => <SelectItem key={lider} value={lider}>{lider}</SelectItem>)}
+                      {filterOptions.lideresProjeto.map(lider => (
+                        <SelectItem key={lider} value={lider}>{lider}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Gerente de Projetos
                   </label>
-                  <Select value={filters.gerenteProjetos} onValueChange={value => setFilters(prev => ({
-                ...prev,
-                gerenteProjetos: value
-              }))}>
-                    <SelectTrigger>
+                  <Select 
+                    value={filters.gerenteProjetos} 
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, gerenteProjetos: value }))}
+                  >
+                    <SelectTrigger className="relative z-50">
                       <SelectValue placeholder="Todos" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="relative z-50 bg-white border shadow-lg">
                       <SelectItem value="">Todos</SelectItem>
-                      {filterOptions.gerentesProjetos.map(gerente => <SelectItem key={gerente} value={gerente}>{gerente}</SelectItem>)}
+                      {filterOptions.gerentesProjetos.map(gerente => (
+                        <SelectItem key={gerente} value={gerente}>{gerente}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Tipo
                   </label>
-                  <Select value={filters.inovacaoMelhoria} onValueChange={value => setFilters(prev => ({
-                ...prev,
-                inovacaoMelhoria: value
-              }))}>
-                    <SelectTrigger>
+                  <Select 
+                    value={filters.inovacaoMelhoria} 
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, inovacaoMelhoria: value }))}
+                  >
+                    <SelectTrigger className="relative z-50">
                       <SelectValue placeholder="Todos" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="relative z-50 bg-white border shadow-lg">
                       <SelectItem value="">Todos</SelectItem>
                       <SelectItem value="Inovação">Inovação</SelectItem>
                       <SelectItem value="Melhoria">Melhoria</SelectItem>
@@ -183,18 +217,18 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                   </Select>
                 </div>
 
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Status do Projeto
                   </label>
-                  <Select value={filters.statusProjeto} onValueChange={value => setFilters(prev => ({
-                ...prev,
-                statusProjeto: value
-              }))}>
-                    <SelectTrigger>
+                  <Select 
+                    value={filters.statusProjeto} 
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, statusProjeto: value }))}
+                  >
+                    <SelectTrigger className="relative z-50">
                       <SelectValue placeholder="Todos" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="relative z-50 bg-white border shadow-lg">
                       <SelectItem value="">Todos</SelectItem>
                       <SelectItem value="green">Verde (No prazo)</SelectItem>
                       <SelectItem value="yellow">Amarelo (Atenção)</SelectItem>
@@ -203,26 +237,29 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                   </Select>
                 </div>
 
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Time TI
                   </label>
-                  <Select value={filters.timeTI} onValueChange={value => setFilters(prev => ({
-                ...prev,
-                timeTI: value
-              }))}>
-                    <SelectTrigger>
+                  <Select 
+                    value={filters.timeTI} 
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, timeTI: value }))}
+                  >
+                    <SelectTrigger className="relative z-50">
                       <SelectValue placeholder="Todos" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="relative z-50 bg-white border shadow-lg">
                       <SelectItem value="">Todos</SelectItem>
-                      {filterOptions.timesTI.map(time => <SelectItem key={time} value={time}>{time}</SelectItem>)}
+                      {filterOptions.timesTI.map(time => (
+                        <SelectItem key={time} value={time}>{time}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
             </CardContent>
-          </Card>}
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
@@ -257,14 +294,20 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 </thead>
                 <tbody>
                   {filteredProjects.map(project => {
-                  const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
-                  const percentualRealizado = calculatePercentualRealizado(project.cronograma);
-                  const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
-                  const statusProjeto = getStatusProjeto(desvio);
-                  const statusOrcamento = getStatusOrcamento(project.cronograma);
-                  const statusGeral = getStatusGeral(project.cronograma);
-                  const dataFimPrevista = getDataFimPrevista(project.cronograma);
-                  return <tr key={project.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => onSelectProject(project)}>
+                    const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
+                    const percentualRealizado = calculatePercentualRealizado(project.cronograma);
+                    const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
+                    const statusProjeto = getStatusProjeto(desvio);
+                    const statusOrcamento = getStatusOrcamento(project.cronograma);
+                    const statusGeral = getStatusGeral(project.cronograma);
+                    const dataFimPrevista = getDataFimPrevista(project.cronograma);
+
+                    return (
+                      <tr 
+                        key={project.id} 
+                        className="hover:bg-gray-50 cursor-pointer" 
+                        onClick={() => onSelectProject(project)}
+                      >
                         <td className="p-3 border-b font-medium text-blue-600 hover:text-blue-800">
                           {project.nome}
                         </td>
@@ -301,22 +344,34 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                         </td>
                         <td className="p-3 border-b">
                           <div className="flex gap-1">
-                            <Button variant="outline" size="sm" onClick={e => showReport(project, e)} className="flex items-center gap-1 font-bold rounded-md bg-slate-200 hover:bg-slate-100">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={(e) => showReport(project, e)} 
+                              className="flex items-center gap-1 font-bold rounded-md bg-slate-200 hover:bg-slate-100"
+                            >
                               <BarChart className="h-3 w-3" />
                               Gráficos
                             </Button>
-                            <Button variant="outline" size="sm" className="flex items-center gap-1 text-red-600 hover:text-red-700" onClick={e => deleteProject(project.id, e)}>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="flex items-center gap-1 text-red-600 hover:text-red-700" 
+                              onClick={(e) => deleteProject(project.id, e)}
+                            >
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
                         </td>
-                      </tr>;
-                })}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           </CardContent>
         </Card>
       </div>
-    </div>;
+    </div>
+  );
 };
