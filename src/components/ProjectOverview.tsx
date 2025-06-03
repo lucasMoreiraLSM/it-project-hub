@@ -63,7 +63,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                   {Object.values(filters).filter(f => f !== '').length}
                 </Badge>}
             </Button>
-            <Button onClick={onRefreshProjects} variant="outline" className="flex items-center gap-2 bg-slate-50 font-normal text-sm my-px mx-0 py-0 px-0">
+            <Button onClick={onRefreshProjects} variant="outline" className="flex items-center gap-2 bg-slate-50 text-sm mx-0 py-0 px-0 my-0 font-normal">
               <RefreshCw className="h-4 w-4" />
               Atualizar Lista
             </Button>
