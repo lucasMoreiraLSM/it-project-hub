@@ -4,12 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { Project } from '@/types/project';
 import { BarChart, Trash2 } from 'lucide-react';
 import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getStatusProjeto, getStatusOrcamento, getStatusOrcamentoColor, getStatusGeral, getDataFimPrevista } from '@/utils/projectCalculations';
+
 interface ProjectTableRowProps {
   project: Project;
   onSelectProject: (project: Project) => void;
   onShowReport: (project: Project, event: React.MouseEvent) => void;
   onDeleteProject: (projectId: string, event: React.MouseEvent) => void;
 }
+
 export const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
   project,
   onSelectProject,
@@ -23,7 +25,9 @@ export const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
   const statusOrcamento = getStatusOrcamento(project.cronograma);
   const statusGeral = getStatusGeral(project.cronograma);
   const dataFimPrevista = getDataFimPrevista(project.cronograma);
-  return <tr className="hover:bg-gray-50 cursor-pointer" onClick={() => onSelectProject(project)}>
+
+  return (
+    <tr className="hover:bg-gray-50 cursor-pointer" onClick={() => onSelectProject(project)}>
       <td className="p-3 border-b font-medium text-blue-600 hover:text-blue-800 py-[12px] px-[12px] mx-0 rounded-sm">
         {project.nome}
       </td>
@@ -62,12 +66,13 @@ export const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
         <div className="flex gap-1">
           <Button variant="outline" size="sm" onClick={e => onShowReport(project, e)} className="flex items-center gap-1 font-bold rounded-md bg-slate-200 hover:bg-slate-100">
             <BarChart className="h-3 w-3" />
-            Gráficos
+            Report
           </Button>
           <Button variant="outline" size="sm" className="flex items-center gap-1 text-red-600 hover:text-red-700" onClick={e => onDeleteProject(project.id, e)}>
             <Trash2 className="h-3 w-3" />
           </Button>
         </div>
       </td>
-    </tr>;
+    </tr>
+  );
 };
