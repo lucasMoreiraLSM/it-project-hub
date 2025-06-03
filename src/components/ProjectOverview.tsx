@@ -7,7 +7,7 @@ import { Filters } from '@/types/filters';
 import { ProjectFilters } from './ProjectFilters';
 import { ProjectTable } from './ProjectTable';
 import { getFilterOptions, filterProjects, hasActiveFilters, clearFilters } from '@/utils/filterUtils';
-import { PieChart, Filter, Plus } from 'lucide-react';
+import { PieChart, Filter, Plus, RefreshCw } from 'lucide-react';
 
 interface ProjectOverviewProps {
   projects: Project[];
@@ -17,6 +17,7 @@ interface ProjectOverviewProps {
   onShowDashboard: () => void;
   onCreateProject: () => void;
   onDeleteProject: (projectId: string) => void;
+  onRefreshProjects: () => void;
   loading: boolean;
 }
 
@@ -27,6 +28,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   onShowDashboard,
   onCreateProject,
   onDeleteProject,
+  onRefreshProjects,
   loading
 }) => {
   const [filters, setFilters] = useState<Filters>(clearFilters());
@@ -79,6 +81,14 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                   {Object.values(filters).filter(f => f !== '').length}
                 </Badge>
               )}
+            </Button>
+            <Button 
+              onClick={onRefreshProjects} 
+              variant="outline" 
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Atualizar Lista
             </Button>
             <Button onClick={onShowDashboard} variant="outline" className="flex items-center gap-2">
               <PieChart className="h-4 w-4" />

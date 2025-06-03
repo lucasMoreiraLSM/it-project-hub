@@ -14,7 +14,7 @@ type ViewMode = 'overview' | 'detail' | 'report' | 'dashboard';
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
-  const { projects, loading: projectsLoading, createProject, updateProject, deleteProject } = useProjects();
+  const { projects, loading: projectsLoading, createProject, updateProject, deleteProject, refetch } = useProjects();
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
 
@@ -124,6 +124,7 @@ const Index = () => {
         onShowDashboard={handleShowDashboard}
         onCreateProject={handleCreateProject}
         onDeleteProject={deleteProject}
+        onRefreshProjects={refetch}
         loading={projectsLoading}
       />
     </div>
