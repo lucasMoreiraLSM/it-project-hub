@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Project, EtapaExecutada } from '@/types/project';
 import { useProjectLock } from '@/hooks/useProjectLock';

@@ -23,11 +23,9 @@ export const useProjectLock = (projectId: string) => {
   const { toast } = useToast();
 
   const checkLock = useCallback(async () => {
-    if (!projectId) return;
+    if (!projectId) return { hasLock: false, lockInfo: null };
 
     try {
-      setIsLoading(true);
-      
       // Primeiro, limpar bloqueios expirados
       await supabase.rpc('cleanup_expired_locks');
 
@@ -40,7 +38,7 @@ export const useProjectLock = (projectId: string) => {
 
       if (error && error.code !== 'PGRST116') {
         console.error('Erro ao verificar bloqueio:', error);
-        return;
+        return { hasLock: false, lockInfo: null };
       }
 
       if (locks) {
@@ -51,26 +49,19 @@ export const useProjectLock = (projectId: string) => {
           setLockId(locks.id);
         }
         
-        // Se o projeto estiver bloqueado por outro usuário
-        if (locks.user_id !== user?.id) {
-          toast({
-            title: "Projeto em edição",
-            description: `Este projeto está sendo editado por ${locks.user_name}`,
-            variant: "destructive",
-          });
-        }
+        return { hasLock: true, lockInfo: locks };
       } else {
         setIsLocked(false);
         setLockInfo(null);
         setIsOwnLock(false);
         setLockId(null);
+        return { hasLock: false, lockInfo: null };
       }
     } catch (error) {
       console.error('Erro ao verificar bloqueio:', error);
-    } finally {
-      setIsLoading(false);
+      return { hasLock: false, lockInfo: null };
     }
-  }, [projectId, user?.id, toast]);
+  }, [projectId, user?.id]);
 
   const acquireLock = useCallback(async (): Promise<boolean> => {
     if (!user || !projectId) return false;
@@ -78,8 +69,22 @@ export const useProjectLock = (projectId: string) => {
     try {
       setIsLoading(true);
       
-      // Primeiro, limpar bloqueios expirados
-      await supabase.rpc('cleanup_expired_locks');
+      // Verificar se já existe bloqueio ativo antes de tentar criar
+      const lockCheck = await checkLock();
+      if (lockCheck.hasLock && lockCheck.lockInfo?.user_id !== user.id) {
+        // Projeto já está bloqueado por outro usuário
+        toast({
+          title: "Projeto em edição",
+          description: `Este projeto está sendo editado por ${lockCheck.lockInfo?.user_name}`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Se já é nosso bloqueio, apenas retornar true
+      if (lockCheck.hasLock && lockCheck.lockInfo?.user_id === user.id) {
+        return true;
+      }
 
       // Tentar criar o bloqueio
       const { data, error } = await supabase
@@ -94,7 +99,14 @@ export const useProjectLock = (projectId: string) => {
 
       if (error) {
         if (error.code === '23505') { // Violação de chave única - projeto já bloqueado
-          await checkLock();
+          const lockCheck = await checkLock();
+          if (lockCheck.hasLock && lockCheck.lockInfo?.user_id !== user.id) {
+            toast({
+              title: "Projeto em edição",
+              description: `Este projeto está sendo editado por ${lockCheck.lockInfo?.user_name}`,
+              variant: "destructive",
+            });
+          }
           return false;
         }
         throw error;
@@ -199,18 +211,9 @@ export const useProjectLock = (projectId: string) => {
         // Para beforeunload, usar sendBeacon para garantir que a requisição seja enviada
         const apikey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZHJrZnd5bW1nc3NsdWhha3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4NDgwOTYsImV4cCI6MjA2MTQyNDA5Nn0.Hez1eKgXjBTQvY7qi3WxN5ZZDiGAdvTKathEeO0ZCb8';
         
-        const formData = new FormData();
-        formData.append('', JSON.stringify({}));
-        
         navigator.sendBeacon(
           `https://skdrkfwymmgssluhakwl.supabase.co/rest/v1/project_locks?id=eq.${lockId}`,
-          JSON.stringify({
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': apikey,
-              'Authorization': `Bearer ${apikey}`
-            }
-          })
+          JSON.stringify({})
         );
       }
     };
