@@ -157,7 +157,7 @@ export const useProjectLock = (projectId: string) => {
       if (lockId) {
         // Usar navigator.sendBeacon para garantir que a requisição seja enviada
         navigator.sendBeacon(
-          `${supabase.supabaseUrl}/rest/v1/project_locks?id=eq.${lockId}`,
+          `https://skdrkfwymmgssluhakwl.supabase.co/rest/v1/project_locks?id=eq.${lockId}`,
           JSON.stringify({})
         );
       }
