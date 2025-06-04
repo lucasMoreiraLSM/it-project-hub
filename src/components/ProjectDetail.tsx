@@ -40,24 +40,21 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
 
   const handleEditClick = async () => {
     if (isEditMode) {
-      // Se já está editando, parar edição
+      // Se já está editando, parar edição e liberar bloqueio
+      console.log('Parando edição, liberando bloqueio...');
       const success = await releaseLock();
       if (success) {
         setIsEditMode(false);
       }
     } else {
-      // Verificar se está bloqueado por outro usuário
-      await checkLock();
-      
-      // Se estiver bloqueado por outro usuário, mostrar visualização bloqueada
-      if (isLocked && !isOwnLock) {
-        return;
-      }
-      
-      // Tentar adquirir bloqueio
+      // Tentar adquirir bloqueio para edição
+      console.log('Tentando adquirir bloqueio para edição...');
       const acquired = await acquireLock();
       if (acquired) {
         setIsEditMode(true);
+        console.log('Bloqueio adquirido, modo de edição ativado');
+      } else {
+        console.log('Não foi possível adquirir bloqueio');
       }
     }
   };
@@ -66,6 +63,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
     if (!isEditMode) return;
     
     try {
+      console.log('Salvando projeto...');
       await onUpdate(editedProject);
       console.log('Projeto salvo, liberando bloqueio...');
       await releaseLock();

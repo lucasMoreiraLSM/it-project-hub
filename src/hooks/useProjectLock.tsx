@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -83,10 +83,14 @@ export const useProjectLock = (projectId: string) => {
 
       // Se já é nosso bloqueio, apenas retornar true
       if (lockCheck.hasLock && lockCheck.lockInfo?.user_id === user.id) {
+        setIsLocked(true);
+        setIsOwnLock(true);
+        setLockId(lockCheck.lockInfo.id);
+        setLockInfo(lockCheck.lockInfo);
         return true;
       }
 
-      // Tentar criar o bloqueio
+      // Tentar criar o bloqueio na tabela project_locks
       const { data, error } = await supabase
         .from('project_locks')
         .insert({
@@ -112,6 +116,7 @@ export const useProjectLock = (projectId: string) => {
         throw error;
       }
 
+      // Bloqueio criado com sucesso
       setIsLocked(true);
       setIsOwnLock(true);
       setLockId(data.id);
@@ -122,6 +127,7 @@ export const useProjectLock = (projectId: string) => {
         description: "Você agora pode editar este projeto.",
       });
       
+      console.log('Bloqueio criado com sucesso:', data);
       return true;
     } catch (error) {
       console.error('Erro ao adquirir bloqueio:', error);
@@ -142,6 +148,7 @@ export const useProjectLock = (projectId: string) => {
     try {
       setIsLoading(true);
       
+      // Deletar o registro da tabela project_locks
       const { error } = await supabase
         .from('project_locks')
         .delete()
@@ -190,6 +197,7 @@ export const useProjectLock = (projectId: string) => {
         .eq('id', lockId);
 
       if (error) throw error;
+      console.log('Bloqueio renovado com sucesso');
     } catch (error) {
       console.error('Erro ao renovar bloqueio:', error);
     }
@@ -204,13 +212,11 @@ export const useProjectLock = (projectId: string) => {
     return () => clearInterval(interval);
   }, [isOwnLock, lockId, renewLock]);
 
-  // Liberar bloqueio quando sair da página ou recarregar - SEMPRE
+  // Liberar bloqueio quando sair da página ou recarregar
   useEffect(() => {
     const handleBeforeUnload = async (event: BeforeUnloadEvent) => {
       if (lockId) {
         // Para beforeunload, usar sendBeacon para garantir que a requisição seja enviada
-        const apikey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZHJrZnd5bW1nc3NsdWhha3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4NDgwOTYsImV4cCI6MjA2MTQyNDA5Nn0.Hez1eKgXjBTQvY7qi3WxN5ZZDiGAdvTKathEeO0ZCb8';
-        
         navigator.sendBeacon(
           `https://skdrkfwymmgssluhakwl.supabase.co/rest/v1/project_locks?id=eq.${lockId}`,
           JSON.stringify({})
