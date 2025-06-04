@@ -1,42 +1,35 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Project } from '@/types/project';
-import { 
-  calculatePercentualPrevisto, 
-  calculatePercentualRealizado, 
-  calculateDesvio,
-  getFarolStatus,
-  getDiasNaEtapa,
-  getStatusCronograma,
-  getStatusCronogramaStyle
-} from '@/utils/projectCalculations';
+import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getFarolStatus, getDiasNaEtapa, getStatusCronograma, getStatusCronogramaStyle } from '@/utils/projectCalculations';
 import { ArrowLeft } from 'lucide-react';
-
 interface ProjectReportProps {
   project: Project;
   onBack: () => void;
 }
-
-export const ProjectReport: React.FC<ProjectReportProps> = ({ project, onBack }) => {
+export const ProjectReport: React.FC<ProjectReportProps> = ({
+  project,
+  onBack
+}) => {
   const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
   const percentualRealizado = calculatePercentualRealizado(project.cronograma);
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
   const farol = getFarolStatus(desvio);
-
   const getFarolColor = (status: string) => {
     switch (status) {
-      case 'Verde': return 'bg-green-500';
-      case 'Amarelo': return 'bg-yellow-500';
-      case 'Vermelho': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case 'Verde':
+        return 'bg-green-500';
+      case 'Amarelo':
+        return 'bg-yellow-500';
+      case 'Vermelho':
+        return 'bg-red-500';
+      default:
+        return 'bg-gray-500';
     }
   };
-
-  return (
-    <div className="min-h-screen bg-gray-50 p-6">
+  return <div className="min-h-screen bg-gray-50 p-6 py-[14px]">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
@@ -113,8 +106,8 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({ project, onBack })
           </Card>
 
           {/* Cronograma de Atividades Macro */}
-          <Card>
-            <CardHeader>
+          <Card className="mx-0 my-[10px]">
+            <CardHeader className="mx-0">
               <CardTitle>📊 Cronograma de Atividades Macro</CardTitle>
             </CardHeader>
             <CardContent>
@@ -133,11 +126,9 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({ project, onBack })
                   </thead>
                   <tbody>
                     {project.cronograma.map((item, index) => {
-                      const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
-                      const status = getStatusCronograma(item);
-
-                      return (
-                        <tr key={index}>
+                    const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
+                    const status = getStatusCronograma(item);
+                    return <tr key={index}>
                           <td className="border border-gray-200 p-2">{item.etapa}</td>
                           <td className="border border-gray-200 p-2">
                             {new Date(item.inicio).toLocaleDateString('pt-BR')}
@@ -153,9 +144,8 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({ project, onBack })
                           <td className="border border-gray-200 p-2 text-center">{item.percentualPrevisto}%</td>
                           <td className="border border-gray-200 p-2 text-center">{item.percentualRealizado}%</td>
                           <td className="border border-gray-200 p-2 text-center">{diasNaEtapa}</td>
-                        </tr>
-                      );
-                    })}
+                        </tr>;
+                  })}
                   </tbody>
                 </table>
               </div>
@@ -163,13 +153,12 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({ project, onBack })
           </Card>
 
           {/* Etapas Executadas */}
-          <Card>
-            <CardHeader>
+          <Card className="mx-0 px-0 py-0 my-[10px]">
+            <CardHeader className="my-0 mx-[33px]">
               <CardTitle>✅ Etapas Executadas</CardTitle>
             </CardHeader>
             <CardContent>
-              {project.etapasExecutadas.length > 0 ? (
-                <div className="overflow-x-auto">
+              {project.etapasExecutadas.length > 0 ? <div className="overflow-x-auto">
                   <table className="w-full border-collapse border border-gray-200">
                     <thead>
                       <tr className="bg-gray-50">
@@ -178,31 +167,25 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({ project, onBack })
                       </tr>
                     </thead>
                     <tbody>
-                      {project.etapasExecutadas.map((etapa, index) => (
-                        <tr key={index}>
+                      {project.etapasExecutadas.map((etapa, index) => <tr key={index}>
                           <td className="border border-gray-200 p-2">{etapa.atividade}</td>
                           <td className="border border-gray-200 p-2">
                             {etapa.dataConclusao ? new Date(etapa.dataConclusao).toLocaleDateString('pt-BR') : 'Não informado'}
                           </td>
-                        </tr>
-                      ))}
+                        </tr>)}
                     </tbody>
                   </table>
-                </div>
-              ) : (
-                <p className="text-gray-500">Nenhuma etapa executada</p>
-              )}
+                </div> : <p className="text-gray-500">Nenhuma etapa executada</p>}
             </CardContent>
           </Card>
 
           {/* Próximas Etapas */}
-          <Card>
-            <CardHeader>
+          <Card className="mx-0 my-[10px]">
+            <CardHeader className="mx-0">
               <CardTitle>🗓️ Próximas Etapas</CardTitle>
             </CardHeader>
             <CardContent>
-              {project.proximasEtapas.length > 0 ? (
-                <div className="overflow-x-auto">
+              {project.proximasEtapas.length > 0 ? <div className="overflow-x-auto">
                   <table className="w-full border-collapse border border-gray-200">
                     <thead>
                       <tr className="bg-gray-50">
@@ -212,25 +195,19 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({ project, onBack })
                       </tr>
                     </thead>
                     <tbody>
-                      {project.proximasEtapas.map((etapa, index) => (
-                        <tr key={index}>
+                      {project.proximasEtapas.map((etapa, index) => <tr key={index}>
                           <td className="border border-gray-200 p-2">{etapa.atividade}</td>
                           <td className="border border-gray-200 p-2">{etapa.responsavel}</td>
                           <td className="border border-gray-200 p-2">
                             {new Date(etapa.previsao).toLocaleDateString('pt-BR')}
                           </td>
-                        </tr>
-                      ))}
+                        </tr>)}
                     </tbody>
                   </table>
-                </div>
-              ) : (
-                <p className="text-gray-500">Nenhuma próxima etapa definida</p>
-              )}
+                </div> : <p className="text-gray-500">Nenhuma próxima etapa definida</p>}
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
