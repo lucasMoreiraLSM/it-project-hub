@@ -264,22 +264,20 @@ export const useProjectLock = (projectId: string) => {
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (lockId) {
-        console.log('Página sendo fechada, liberando bloqueio via beacon');
-        // Usar navigator.sendBeacon para liberar o bloqueio de forma síncrona
-        const url = `${supabase.supabaseUrl}/rest/v1/project_locks?id=eq.${lockId}`;
-        const headers = {
-          'apikey': supabase.supabaseKey,
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`
-        };
+        console.log('Página sendo fechada, liberando bloqueio via fetch');
+        // Usar fetch simples para liberar o bloqueio de forma síncrona
+        const SUPABASE_URL = "https://skdrkfwymmgssluhakwl.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZHJrZnd5bW1nc3NsdWhha3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4NDgwOTYsImV4cCI6MjA2MTQyNDA5Nn0.Hez1eKgXjBTQvY7qi3WxN5ZZDiGAdvTKathEeO0ZCb8";
         
         try {
-          navigator.sendBeacon(
-            url,
-            new Blob([JSON.stringify({})], { 
-              type: 'application/json' 
-            })
-          );
+          fetch(`${SUPABASE_URL}/rest/v1/project_locks?id=eq.${lockId}`, {
+            method: 'DELETE',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          });
         } catch (error) {
           console.error('Erro ao liberar bloqueio no beforeunload:', error);
         }
