@@ -110,6 +110,8 @@ export const useProjectLock = (projectId: string) => {
       setLockInfo(null);
       setIsOwnLock(false);
       setLockId(null);
+      
+      console.log('Bloqueio liberado com sucesso');
     } catch (error) {
       console.error('Erro ao liberar bloqueio:', error);
     }
@@ -151,22 +153,37 @@ export const useProjectLock = (projectId: string) => {
     return () => clearInterval(interval);
   }, [isOwnLock, lockId, renewLock]);
 
-  // Liberar bloqueio quando sair da página
+  // Liberar bloqueio quando sair da página ou recarregar
   useEffect(() => {
-    const handleBeforeUnload = () => {
+    const handleBeforeUnload = async (event: BeforeUnloadEvent) => {
       if (lockId) {
-        // Usar navigator.sendBeacon para garantir que a requisição seja enviada
+        // Para beforeunload, usar sendBeacon para garantir que a requisição seja enviada
+        const deletePayload = {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZHJrZnd5bW1nc3NsdWhha3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4NDgwOTYsImV4cCI6MjA2MTQyNDA5Nn0.Hez1eKgXjBTQvY7qi3WxN5ZZDiGAdvTKathEeO0ZCb8'
+          },
+          body: JSON.stringify({})
+        };
+        
         navigator.sendBeacon(
           `https://skdrkfwymmgssluhakwl.supabase.co/rest/v1/project_locks?id=eq.${lockId}`,
-          JSON.stringify({})
+          JSON.stringify(deletePayload)
         );
       }
     };
 
+    // Adicionar listener para beforeunload
     window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // Cleanup quando o componente for desmontado
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      releaseLock();
+      // Liberar bloqueio de forma assíncrona quando o componente for desmontado
+      if (lockId) {
+        releaseLock();
+      }
     };
   }, [lockId, releaseLock]);
 

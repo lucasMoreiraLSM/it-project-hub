@@ -51,13 +51,20 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
 
   const handleSave = async () => {
     if (!canEdit) return;
-    await onUpdate(editedProject);
-    await releaseLock();
-    onBack();
+    
+    try {
+      await onUpdate(editedProject);
+      console.log('Projeto salvo, liberando bloqueio...');
+      await releaseLock();
+      onBack();
+    } catch (error) {
+      console.error('Erro ao salvar projeto:', error);
+    }
   };
 
   const handleBack = async () => {
-    if (canEdit) {
+    if (canEdit && isOwnLock) {
+      console.log('Voltando, liberando bloqueio...');
       await releaseLock();
     }
     onBack();
@@ -332,28 +339,28 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                   <Input id="sponsor" value={editedProject.sponsor} onChange={e => setEditedProject({
                   ...editedProject,
                   sponsor: e.target.value
-                })} />
+                })} disabled={!canEdit} />
                 </div>
                 <div>
                   <Label htmlFor="productOwner">Product Owner</Label>
                   <Input id="productOwner" value={editedProject.productOwner} onChange={e => setEditedProject({
                   ...editedProject,
                   productOwner: e.target.value
-                })} />
+                })} disabled={!canEdit} />
                 </div>
                 <div>
                   <Label htmlFor="gerenteProjetos">Gerente de Projetos</Label>
                   <Input id="gerenteProjetos" value={editedProject.gerenteProjetos} onChange={e => setEditedProject({
                   ...editedProject,
                   gerenteProjetos: e.target.value
-                })} />
+                })} disabled={!canEdit} />
                 </div>
                 <div>
                   <Label htmlFor="liderProjetosTI">Líder Projetos TI</Label>
                   <Input id="liderProjetosTI" value={editedProject.liderProjetosTI} onChange={e => setEditedProject({
                   ...editedProject,
                   liderProjetosTI: e.target.value
-                })} />
+                })} disabled={!canEdit} />
                 </div>
               </div>
             </CardContent>
@@ -364,19 +371,23 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 📝 Escopo
-                <Button size="sm" onClick={() => addToList('escopo', '')} className="flex items-center gap-1">
-                  <Plus className="h-3 w-3" />
-                  Adicionar
-                </Button>
+                {canEdit && (
+                  <Button size="sm" onClick={() => addToList('escopo', '')} className="flex items-center gap-1">
+                    <Plus className="h-3 w-3" />
+                    Adicionar
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {editedProject.escopo.map((item, index) => <div key={index} className="flex items-center gap-2">
-                    <Input value={item} onChange={e => updateListItem('escopo', index, e.target.value)} placeholder="Funcionalidade" />
-                    <Button variant="outline" size="sm" onClick={() => removeFromList('escopo', index)}>
-                      <X className="h-3 w-3" />
-                    </Button>
+                    <Input value={item} onChange={e => updateListItem('escopo', index, e.target.value)} placeholder="Funcionalidade" disabled={!canEdit} />
+                    {canEdit && (
+                      <Button variant="outline" size="sm" onClick={() => removeFromList('escopo', index)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>)}
               </div>
             </CardContent>
@@ -387,19 +398,23 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 🎯 Principais Objetivos e Metas
-                <Button size="sm" onClick={() => addToList('objetivos', '')} className="flex items-center gap-1">
-                  <Plus className="h-3 w-3" />
-                  Adicionar
-                </Button>
+                {canEdit && (
+                  <Button size="sm" onClick={() => addToList('objetivos', '')} className="flex items-center gap-1">
+                    <Plus className="h-3 w-3" />
+                    Adicionar
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {editedProject.objetivos.map((item, index) => <div key={index} className="flex items-center gap-2">
-                    <Input value={item} onChange={e => updateListItem('objetivos', index, e.target.value)} placeholder="Objetivo" />
-                    <Button variant="outline" size="sm" onClick={() => removeFromList('objetivos', index)}>
-                      <X className="h-3 w-3" />
-                    </Button>
+                    <Input value={item} onChange={e => updateListItem('objetivos', index, e.target.value)} placeholder="Objetivo" disabled={!canEdit} />
+                    {canEdit && (
+                      <Button variant="outline" size="sm" onClick={() => removeFromList('objetivos', index)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>)}
               </div>
             </CardContent>
@@ -410,13 +425,15 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 ✅ Etapas Executadas
-                <Button size="sm" onClick={() => addToList('etapasExecutadas', {
-                atividade: '',
-                dataConclusao: ''
-              })} className="flex items-center gap-1">
-                  <Plus className="h-3 w-3" />
-                  Adicionar
-                </Button>
+                {canEdit && (
+                  <Button size="sm" onClick={() => addToList('etapasExecutadas', {
+                    atividade: '',
+                    dataConclusao: ''
+                  })} className="flex items-center gap-1">
+                    <Plus className="h-3 w-3" />
+                    Adicionar
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -435,18 +452,20 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                           <Input value={etapa.atividade} onChange={e => updateListItem('etapasExecutadas', index, {
                         ...etapa,
                         atividade: e.target.value
-                      })} placeholder="Atividade executada" />
+                      })} placeholder="Atividade executada" disabled={!canEdit} />
                         </td>
                         <td className="border border-gray-200 p-2">
                           <Input type="date" value={etapa.dataConclusao} onChange={e => updateListItem('etapasExecutadas', index, {
                         ...etapa,
                         dataConclusao: e.target.value
-                      })} />
+                      })} disabled={!canEdit} />
                         </td>
                         <td className="border border-gray-200 p-2">
-                          <Button variant="outline" size="sm" onClick={() => removeFromList('etapasExecutadas', index)}>
-                            <X className="h-3 w-3" />
-                          </Button>
+                          {canEdit && (
+                            <Button variant="outline" size="sm" onClick={() => removeFromList('etapasExecutadas', index)}>
+                              <X className="h-3 w-3" />
+                            </Button>
+                          )}
                         </td>
                       </tr>)}
                   </tbody>
@@ -460,14 +479,16 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 🗓️ Próximas Etapas
-                <Button size="sm" onClick={() => addToList('proximasEtapas', {
-                atividade: '',
-                responsavel: '',
-                previsao: ''
-              })} className="flex items-center gap-1">
-                  <Plus className="h-3 w-3" />
-                  Adicionar
-                </Button>
+                {canEdit && (
+                  <Button size="sm" onClick={() => addToList('proximasEtapas', {
+                    atividade: '',
+                    responsavel: '',
+                    previsao: ''
+                  })} className="flex items-center gap-1">
+                    <Plus className="h-3 w-3" />
+                    Adicionar
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -487,29 +508,33 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                           <Input value={etapa.atividade} onChange={e => updateListItem('proximasEtapas', index, {
                         ...etapa,
                         atividade: e.target.value
-                      })} placeholder="Atividade" />
+                      })} placeholder="Atividade" disabled={!canEdit} />
                         </td>
                         <td className="border border-gray-200 p-2">
                           <Input value={etapa.responsavel} onChange={e => updateListItem('proximasEtapas', index, {
                         ...etapa,
                         responsavel: e.target.value
-                      })} placeholder="Responsável" />
+                      })} placeholder="Responsável" disabled={!canEdit} />
                         </td>
                         <td className="border border-gray-200 p-2">
                           <Input type="date" value={etapa.previsao} onChange={e => updateListItem('proximasEtapas', index, {
                         ...etapa,
                         previsao: e.target.value
-                      })} />
+                      })} disabled={!canEdit} />
                         </td>
                         <td className="border border-gray-200 p-2">
                           <div className="flex gap-1">
-                            <Button variant="outline" size="sm" onClick={() => concluirEtapa(index)} className="flex items-center gap-1 text-green-600 hover:text-green-700" title="Concluir etapa">
-                              <Check className="h-3 w-3" />
-                              Concluir
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={() => removeFromList('proximasEtapas', index)}>
-                              <X className="h-3 w-3" />
-                            </Button>
+                            {canEdit && (
+                              <>
+                                <Button variant="outline" size="sm" onClick={() => concluirEtapa(index)} className="flex items-center gap-1 text-green-600 hover:text-green-700" title="Concluir etapa">
+                                  <Check className="h-3 w-3" />
+                                  Concluir
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={() => removeFromList('proximasEtapas', index)}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>)}
@@ -524,16 +549,18 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 📊 Cronograma de Atividades Macro
-                <Button size="sm" onClick={() => addToList('cronograma', {
-                etapa: '',
-                inicio: '',
-                fim: '',
-                percentualPrevisto: 0,
-                percentualRealizado: 0
-              })} className="flex items-center gap-1">
-                  <Plus className="h-3 w-3" />
-                  Adicionar
-                </Button>
+                {canEdit && (
+                  <Button size="sm" onClick={() => addToList('cronograma', {
+                    etapa: '',
+                    inicio: '',
+                    fim: '',
+                    percentualPrevisto: 0,
+                    percentualRealizado: 0
+                  })} className="flex items-center gap-1">
+                    <Plus className="h-3 w-3" />
+                    Adicionar
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -562,19 +589,19 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                             <Input value={item.etapa} onChange={e => updateListItem('cronograma', index, {
                           ...item,
                           etapa: e.target.value
-                        })} placeholder="Descrição da etapa" />
+                        })} placeholder="Descrição da etapa" disabled={!canEdit} />
                           </td>
                           <td className="border border-gray-200 p-2">
                             <Input type="date" value={item.inicio} onChange={e => updateListItem('cronograma', index, {
                           ...item,
                           inicio: e.target.value
-                        })} />
+                        })} disabled={!canEdit} />
                           </td>
                           <td className="border border-gray-200 p-2">
                             <Input type="date" value={item.fim} onChange={e => updateListItem('cronograma', index, {
                           ...item,
                           fim: e.target.value
-                        })} min={item.inicio} />
+                        })} min={item.inicio} disabled={!canEdit} />
                           </td>
                           <td className="border border-gray-200 p-2 rounded-none px-0 mx-[3px]">
                             <span className={`px-2 py-1 rounded text-xs ${getStatusCronogramaStyle(status)}`}>
@@ -585,20 +612,22 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                             <Input type="number" min="0" max="100" value={item.percentualPrevisto} onChange={e => updateListItem('cronograma', index, {
                           ...item,
                           percentualPrevisto: parseInt(e.target.value) || 0
-                        })} />
+                        })} disabled={!canEdit} />
                           </td>
                           <td className="border border-gray-200 p-2">
                             <Input type="number" min="0" max="100" value={item.percentualRealizado} onChange={e => updateListItem('cronograma', index, {
                           ...item,
                           percentualRealizado: parseInt(e.target.value) || 0
-                        })} />
+                        })} disabled={!canEdit} />
                           </td>
                           <td className="border border-gray-200 p-2 text-center">{diasNaEtapa}</td>
                           <td className="border border-gray-200 p-2 text-center">{hoje}</td>
                           <td className="border border-gray-200 p-2">
-                            <Button variant="outline" size="sm" onClick={() => removeFromList('cronograma', index)}>
-                              <X className="h-3 w-3" />
-                            </Button>
+                            {canEdit && (
+                              <Button variant="outline" size="sm" onClick={() => removeFromList('cronograma', index)}>
+                                <X className="h-3 w-3" />
+                              </Button>
+                            )}
                           </td>
                         </tr>;
                   })}
@@ -613,19 +642,23 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 ⚠️ Pontos de Atenção e Impedimentos
-                <Button size="sm" onClick={() => addToList('pontosAtencao', '')} className="flex items-center gap-1">
-                  <Plus className="h-3 w-3" />
-                  Adicionar
-                </Button>
+                {canEdit && (
+                  <Button size="sm" onClick={() => addToList('pontosAtencao', '')} className="flex items-center gap-1">
+                    <Plus className="h-3 w-3" />
+                    Adicionar
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {editedProject.pontosAtencao.map((item, index) => <div key={index} className="flex items-center gap-2">
-                    <Input value={item} onChange={e => updateListItem('pontosAtencao', index, e.target.value)} placeholder="Ponto de atenção" className="text-red-600 placeholder-red-400" />
-                    <Button variant="outline" size="sm" onClick={() => removeFromList('pontosAtencao', index)}>
-                      <X className="h-3 w-3" />
-                    </Button>
+                    <Input value={item} onChange={e => updateListItem('pontosAtencao', index, e.target.value)} placeholder="Ponto de atenção" className="text-red-600 placeholder-red-400" disabled={!canEdit} />
+                    {canEdit && (
+                      <Button variant="outline" size="sm" onClick={() => removeFromList('pontosAtencao', index)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>)}
               </div>
             </CardContent>
