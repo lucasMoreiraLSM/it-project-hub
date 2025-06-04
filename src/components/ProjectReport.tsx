@@ -10,7 +10,8 @@ import {
   calculateDesvio,
   getFarolStatus,
   getDiasNaEtapa,
-  getStatusCronograma
+  getStatusCronograma,
+  getStatusCronogramaStyle
 } from '@/utils/projectCalculations';
 import { ArrowLeft } from 'lucide-react';
 
@@ -145,13 +146,9 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({ project, onBack })
                             {new Date(item.fim).toLocaleDateString('pt-BR')}
                           </td>
                           <td className="border border-gray-200 p-2">
-                            <Badge variant={
-                              status === 'Concluído' ? 'default' : 
-                              status === 'Atrasado' ? 'destructive' : 
-                              status === 'Em Andamento' ? 'secondary' : 'outline'
-                            }>
+                            <span className={`px-2 py-1 rounded text-xs ${getStatusCronogramaStyle(status)}`}>
                               {status}
-                            </Badge>
+                            </span>
                           </td>
                           <td className="border border-gray-200 p-2 text-center">{item.percentualPrevisto}%</td>
                           <td className="border border-gray-200 p-2 text-center">{item.percentualRealizado}%</td>

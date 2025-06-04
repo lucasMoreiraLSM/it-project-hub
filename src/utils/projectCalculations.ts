@@ -84,10 +84,18 @@ export const getStatusCronograma = (item: CronogramaItem): string => {
   const hoje = new Date();
   const fimPrevisto = new Date(item.fim);
   
+  // Concluído: % Realizado igual a 100
   if (item.percentualRealizado === 100) return 'Concluído';
-  if (item.percentualRealizado <= 0) return 'Não Iniciado';
+  
+  // Não iniciado: % Previsto igual a 0 e % Realizado menor ou igual a 0
+  if (item.percentualPrevisto === 0 && item.percentualRealizado <= 0) return 'Não Iniciado';
+  
+  // Atrasado: Quando a "data fim" é menor que a "data atual" e % realizado é menor que 100
   if (fimPrevisto < hoje && item.percentualRealizado < 100) return 'Atrasado';
-  if (item.percentualPrevisto > 0) return 'Em Andamento';
+  
+  // Em andamento: % Previsto maior que 0 e % Realizado maior que 0
+  if (item.percentualPrevisto > 0 && item.percentualRealizado > 0) return 'Em Andamento';
+  
   return 'Não Iniciado';
 };
 
@@ -111,4 +119,24 @@ export const getDataFimPrevista = (cronograma: CronogramaItem[]): string => {
   });
   
   return new Date(ultimaEtapa.fim).toLocaleDateString('pt-BR');
+};
+
+export const getStatusCronogramaBadgeVariant = (status: string): 'default' | 'destructive' | 'secondary' | 'outline' => {
+  switch (status) {
+    case 'Concluído': return 'default';
+    case 'Atrasado': return 'destructive';
+    case 'Em Andamento': return 'secondary';
+    case 'Não Iniciado': return 'outline';
+    default: return 'outline';
+  }
+};
+
+export const getStatusCronogramaStyle = (status: string): string => {
+  switch (status) {
+    case 'Não Iniciado': return 'bg-[#F5F2F0] text-black font-bold';
+    case 'Em Andamento': return 'bg-[#5D9AF5] text-white font-bold';
+    case 'Atrasado': return 'bg-[#F04D58] text-white font-bold';
+    case 'Concluído': return 'bg-[#59F0A7] text-black font-bold';
+    default: return 'bg-gray-500 text-white font-bold';
+  }
 };

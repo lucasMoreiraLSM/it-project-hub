@@ -6,13 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Project, ProximaEtapa, EtapaExecutada } from '@/types/project';
-import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getFarolStatus, getDiasNaEtapa, getStatusCronograma } from '@/utils/projectCalculations';
+import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getFarolStatus, getDiasNaEtapa, getStatusCronograma, getStatusCronogramaStyle } from '@/utils/projectCalculations';
 import { ArrowLeft, Plus, X, Check } from 'lucide-react';
+
 interface ProjectDetailProps {
   project: Project;
   onBack: () => void;
   onUpdate: (project: Project) => void;
 }
+
 export const ProjectDetail: React.FC<ProjectDetailProps> = ({
   project,
   onBack,
@@ -21,13 +23,16 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
   const [editedProject, setEditedProject] = useState<Project>({
     ...project
   });
+
   const percentualPrevisto = calculatePercentualPrevisto(editedProject.cronograma);
   const percentualRealizado = calculatePercentualRealizado(editedProject.cronograma);
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
   const farol = getFarolStatus(desvio);
+
   const handleSave = () => {
     onUpdate(editedProject);
   };
+
   const addToList = (field: keyof Project, newItem: any) => {
     const currentList = editedProject[field] as any[];
     setEditedProject({
@@ -35,6 +40,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       [field]: [...currentList, newItem]
     });
   };
+
   const removeFromList = (field: keyof Project, index: number) => {
     const currentList = editedProject[field] as any[];
     setEditedProject({
@@ -42,6 +48,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       [field]: currentList.filter((_, i) => i !== index)
     });
   };
+
   const updateListItem = (field: keyof Project, index: number, value: any) => {
     const currentList = editedProject[field] as any[];
     const updatedList = [...currentList];
@@ -51,6 +58,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       [field]: updatedList
     });
   };
+
   const concluirEtapa = (index: number) => {
     const proximaEtapa = editedProject.proximasEtapas[index];
     const novaEtapaExecutada: EtapaExecutada = {
@@ -69,6 +77,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       etapasExecutadas: novasEtapasExecutadas
     });
   };
+
   const getFarolColor = (status: string) => {
     switch (status) {
       case 'Verde':
@@ -81,7 +90,9 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
         return 'bg-gray-500';
     }
   };
-  return <div className="min-h-screen bg-gray-50 p-6">
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
@@ -104,24 +115,35 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="nome">Nome do Projeto</Label>
-                  <Input id="nome" value={editedProject.nome} onChange={e => setEditedProject({
-                  ...editedProject,
-                  nome: e.target.value
-                })} />
+                  <Input
+                    id="nome"
+                    value={editedProject.nome}
+                    onChange={(e) => setEditedProject({
+                      ...editedProject,
+                      nome: e.target.value
+                    })}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="areaNegocio">Área de Negócio</Label>
-                  <Input id="areaNegocio" value={editedProject.areaNegocio} onChange={e => setEditedProject({
-                  ...editedProject,
-                  areaNegocio: e.target.value
-                })} />
+                  <Input
+                    id="areaNegocio"
+                    value={editedProject.areaNegocio}
+                    onChange={(e) => setEditedProject({
+                      ...editedProject,
+                      areaNegocio: e.target.value
+                    })}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="inovacaoMelhoria">Inovação/Melhoria</Label>
-                  <Select value={editedProject.inovacaoMelhoria} onValueChange={(value: 'Inovação' | 'Melhoria') => setEditedProject({
-                  ...editedProject,
-                  inovacaoMelhoria: value
-                })}>
+                  <Select
+                    value={editedProject.inovacaoMelhoria}
+                    onValueChange={(value: 'Inovação' | 'Melhoria') => setEditedProject({
+                      ...editedProject,
+                      inovacaoMelhoria: value
+                    })}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -133,10 +155,15 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                 </div>
                 <div>
                   <Label htmlFor="timeTI">Time TI</Label>
-                  <Input id="timeTI" value={editedProject.timeTI} onChange={e => setEditedProject({
-                  ...editedProject,
-                  timeTI: e.target.value
-                })} placeholder="Projetos, Infraestrutura, Segurança, Sustentação" />
+                  <Input
+                    id="timeTI"
+                    value={editedProject.timeTI}
+                    onChange={(e) => setEditedProject({
+                      ...editedProject,
+                      timeTI: e.target.value
+                    })}
+                    placeholder="Projetos, Infraestrutura, Segurança, Sustentação"
+                  />
                 </div>
               </div>
               
@@ -256,10 +283,14 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 ✅ Etapas Executadas
-                <Button size="sm" onClick={() => addToList('etapasExecutadas', {
-                atividade: '',
-                dataConclusao: ''
-              })} className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  onClick={() => addToList('etapasExecutadas', {
+                    atividade: '',
+                    dataConclusao: ''
+                  })}
+                  className="flex items-center gap-1"
+                >
                   <Plus className="h-3 w-3" />
                   Adicionar
                 </Button>
@@ -276,25 +307,39 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {editedProject.etapasExecutadas.map((etapa, index) => <tr key={index}>
+                    {editedProject.etapasExecutadas.map((etapa, index) => (
+                      <tr key={index}>
                         <td className="border border-gray-200 p-2">
-                          <Input value={etapa.atividade} onChange={e => updateListItem('etapasExecutadas', index, {
-                        ...etapa,
-                        atividade: e.target.value
-                      })} placeholder="Atividade executada" />
+                          <Input
+                            value={etapa.atividade}
+                            onChange={(e) => updateListItem('etapasExecutadas', index, {
+                              ...etapa,
+                              atividade: e.target.value
+                            })}
+                            placeholder="Atividade executada"
+                          />
                         </td>
                         <td className="border border-gray-200 p-2">
-                          <Input type="date" value={etapa.dataConclusao} onChange={e => updateListItem('etapasExecutadas', index, {
-                        ...etapa,
-                        dataConclusao: e.target.value
-                      })} />
+                          <Input
+                            type="date"
+                            value={etapa.dataConclusao}
+                            onChange={(e) => updateListItem('etapasExecutadas', index, {
+                              ...etapa,
+                              dataConclusao: e.target.value
+                            })}
+                          />
                         </td>
                         <td className="border border-gray-200 p-2">
-                          <Button variant="outline" size="sm" onClick={() => removeFromList('etapasExecutadas', index)}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeFromList('etapasExecutadas', index)}
+                          >
                             <X className="h-3 w-3" />
                           </Button>
                         </td>
-                      </tr>)}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -306,11 +351,15 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 🗓️ Próximas Etapas
-                <Button size="sm" onClick={() => addToList('proximasEtapas', {
-                atividade: '',
-                responsavel: '',
-                previsao: ''
-              })} className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  onClick={() => addToList('proximasEtapas', {
+                    atividade: '',
+                    responsavel: '',
+                    previsao: ''
+                  })}
+                  className="flex items-center gap-1"
+                >
                   <Plus className="h-3 w-3" />
                   Adicionar
                 </Button>
@@ -328,37 +377,61 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {editedProject.proximasEtapas.map((etapa, index) => <tr key={index}>
+                    {editedProject.proximasEtapas.map((etapa, index) => (
+                      <tr key={index}>
                         <td className="border border-gray-200 p-2">
-                          <Input value={etapa.atividade} onChange={e => updateListItem('proximasEtapas', index, {
-                        ...etapa,
-                        atividade: e.target.value
-                      })} placeholder="Atividade" />
+                          <Input
+                            value={etapa.atividade}
+                            onChange={(e) => updateListItem('proximasEtapas', index, {
+                              ...etapa,
+                              atividade: e.target.value
+                            })}
+                            placeholder="Atividade"
+                          />
                         </td>
                         <td className="border border-gray-200 p-2">
-                          <Input value={etapa.responsavel} onChange={e => updateListItem('proximasEtapas', index, {
-                        ...etapa,
-                        responsavel: e.target.value
-                      })} placeholder="Responsável" />
+                          <Input
+                            value={etapa.responsavel}
+                            onChange={(e) => updateListItem('proximasEtapas', index, {
+                              ...etapa,
+                              responsavel: e.target.value
+                            })}
+                            placeholder="Responsável"
+                          />
                         </td>
                         <td className="border border-gray-200 p-2">
-                          <Input type="date" value={etapa.previsao} onChange={e => updateListItem('proximasEtapas', index, {
-                        ...etapa,
-                        previsao: e.target.value
-                      })} />
+                          <Input
+                            type="date"
+                            value={etapa.previsao}
+                            onChange={(e) => updateListItem('proximasEtapas', index, {
+                              ...etapa,
+                              previsao: e.target.value
+                            })}
+                          />
                         </td>
                         <td className="border border-gray-200 p-2">
                           <div className="flex gap-1">
-                            <Button variant="outline" size="sm" onClick={() => concluirEtapa(index)} className="flex items-center gap-1 text-green-600 hover:text-green-700" title="Concluir etapa">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => concluirEtapa(index)}
+                              className="flex items-center gap-1 text-green-600 hover:text-green-700"
+                              title="Concluir etapa"
+                            >
                               <Check className="h-3 w-3" />
                               Concluir
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => removeFromList('proximasEtapas', index)}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeFromList('proximasEtapas', index)}
+                            >
                               <X className="h-3 w-3" />
                             </Button>
                           </div>
                         </td>
-                      </tr>)}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -370,13 +443,17 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 📊 Cronograma de Atividades Macro
-                <Button size="sm" onClick={() => addToList('cronograma', {
-                etapa: '',
-                inicio: '',
-                fim: '',
-                percentualPrevisto: 0,
-                percentualRealizado: 0
-              })} className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  onClick={() => addToList('cronograma', {
+                    etapa: '',
+                    inicio: '',
+                    fim: '',
+                    percentualPrevisto: 0,
+                    percentualRealizado: 0
+                  })}
+                  className="flex items-center gap-1"
+                >
                   <Plus className="h-3 w-3" />
                   Adicionar
                 </Button>
@@ -400,54 +477,86 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                   </thead>
                   <tbody>
                     {editedProject.cronograma.map((item, index) => {
-                    const diasNaEtapa = getDiasNaEtapa(item.inicio);
-                    const status = getStatusCronograma(item);
-                    const hoje = new Date().toLocaleDateString('pt-BR');
-                    return <tr key={index}>
+                      const diasNaEtapa = getDiasNaEtapa(item.inicio);
+                      const status = getStatusCronograma(item);
+                      const hoje = new Date().toLocaleDateString('pt-BR');
+
+                      return (
+                        <tr key={index}>
                           <td className="border border-gray-200 p-2">
-                            <Input value={item.etapa} onChange={e => updateListItem('cronograma', index, {
-                          ...item,
-                          etapa: e.target.value
-                        })} placeholder="Descrição da etapa" />
+                            <Input
+                              value={item.etapa}
+                              onChange={(e) => updateListItem('cronograma', index, {
+                                ...item,
+                                etapa: e.target.value
+                              })}
+                              placeholder="Descrição da etapa"
+                            />
                           </td>
                           <td className="border border-gray-200 p-2">
-                            <Input type="date" value={item.inicio} onChange={e => updateListItem('cronograma', index, {
-                          ...item,
-                          inicio: e.target.value
-                        })} />
+                            <Input
+                              type="date"
+                              value={item.inicio}
+                              onChange={(e) => updateListItem('cronograma', index, {
+                                ...item,
+                                inicio: e.target.value
+                              })}
+                            />
                           </td>
                           <td className="border border-gray-200 p-2">
-                            <Input type="date" value={item.fim} onChange={e => updateListItem('cronograma', index, {
-                          ...item,
-                          fim: e.target.value
-                        })} min={item.inicio} />
+                            <Input
+                              type="date"
+                              value={item.fim}
+                              onChange={(e) => updateListItem('cronograma', index, {
+                                ...item,
+                                fim: e.target.value
+                              })}
+                              min={item.inicio}
+                            />
                           </td>
                           <td className="border border-gray-200 p-2">
-                            <Badge variant={status === 'Concluído' ? 'default' : status === 'Atrasado' ? 'destructive' : status === 'Em Andamento' ? 'secondary' : 'outline'}>
+                            <span className={`px-2 py-1 rounded text-xs ${getStatusCronogramaStyle(status)}`}>
                               {status}
-                            </Badge>
+                            </span>
                           </td>
                           <td className="border border-gray-200 p-2">
-                            <Input type="number" min="0" max="100" value={item.percentualPrevisto} onChange={e => updateListItem('cronograma', index, {
-                          ...item,
-                          percentualPrevisto: parseInt(e.target.value) || 0
-                        })} />
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={item.percentualPrevisto}
+                              onChange={(e) => updateListItem('cronograma', index, {
+                                ...item,
+                                percentualPrevisto: parseInt(e.target.value) || 0
+                              })}
+                            />
                           </td>
                           <td className="border border-gray-200 p-2">
-                            <Input type="number" min="0" max="100" value={item.percentualRealizado} onChange={e => updateListItem('cronograma', index, {
-                          ...item,
-                          percentualRealizado: parseInt(e.target.value) || 0
-                        })} />
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={item.percentualRealizado}
+                              onChange={(e) => updateListItem('cronograma', index, {
+                                ...item,
+                                percentualRealizado: parseInt(e.target.value) || 0
+                              })}
+                            />
                           </td>
                           <td className="border border-gray-200 p-2 text-center">{diasNaEtapa}</td>
                           <td className="border border-gray-200 p-2 text-center">{hoje}</td>
                           <td className="border border-gray-200 p-2">
-                            <Button variant="outline" size="sm" onClick={() => removeFromList('cronograma', index)}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeFromList('cronograma', index)}
+                            >
                               <X className="h-3 w-3" />
                             </Button>
                           </td>
-                        </tr>;
-                  })}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -503,5 +612,6 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
 
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
