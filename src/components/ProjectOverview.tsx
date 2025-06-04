@@ -51,7 +51,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
         <div className="text-lg">Carregando projetos...</div>
       </div>;
   }
-  return <div className="min-h-screen p-6 bg-slate-200 px-[10px] py-[10px]">
+  return <div className="min-h-screen p-6 bg-slate-200 px-0 py-[10px]">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Visão Geral dos Projetos</h1>
