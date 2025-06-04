@@ -1,10 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Project } from '@/types/project';
 import { ProjectTableRow } from './ProjectTableRow';
-
 interface ProjectTableProps {
   projects: Project[];
   totalProjects: number;
@@ -12,7 +10,6 @@ interface ProjectTableProps {
   onShowReport: (project: Project, event: React.MouseEvent) => void;
   onDeleteProject: (projectId: string, event: React.MouseEvent) => void;
 }
-
 export const ProjectTable: React.FC<ProjectTableProps> = ({
   projects,
   totalProjects,
@@ -20,8 +17,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
   onShowReport,
   onDeleteProject
 }) => {
-  return (
-    <Card className="w-full">
+  return <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           Lista de Projetos
@@ -41,8 +37,8 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                 <TableHead className="w-[80px] text-center">% Desv.</TableHead>
                 <TableHead className="w-[60px] text-center">Status</TableHead>
                 <TableHead className="w-[100px] text-center">Data Fim</TableHead>
-                <TableHead className="w-[90px] text-center">Orçamento</TableHead>
-                <TableHead className="w-[120px]">Áreas</TableHead>
+                <TableHead className="w-[90px] text-center">Status Geral</TableHead>
+                <TableHead className="w-[120px] px-[25px]">Áreas</TableHead>
                 <TableHead className="w-[100px]">Time TI</TableHead>
                 <TableHead className="w-[120px]">Líder TI</TableHead>
                 <TableHead className="w-[120px]">Gerente Proj.</TableHead>
@@ -53,19 +49,10 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {projects.map(project => (
-                <ProjectTableRow
-                  key={project.id}
-                  project={project}
-                  onSelectProject={onSelectProject}
-                  onShowReport={onShowReport}
-                  onDeleteProject={onDeleteProject}
-                />
-              ))}
+              {projects.map(project => <ProjectTableRow key={project.id} project={project} onSelectProject={onSelectProject} onShowReport={onShowReport} onDeleteProject={onDeleteProject} />)}
             </TableBody>
           </Table>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
