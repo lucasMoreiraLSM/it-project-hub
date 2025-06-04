@@ -1,17 +1,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-
-interface ProjectLock {
-  id: string;
-  project_id: string;
-  user_id: string;
-  user_name: string;
-  locked_at: string;
-  expires_at: string;
-}
+import { ProjectLock } from '@/types/projectLock';
+import { LOCK_RENEWAL_INTERVAL } from '@/utils/lockConstants';
+import {
+  checkProjectLock,
+  createProjectLock,
+  deleteProjectLock,
+  renewProjectLock,
+  releaseLockOnPageUnload
+} from '@/utils/lockOperations';
 
 export const useProjectLock = (projectId: string) => {
   const [isLocked, setIsLocked] = useState(false);
@@ -23,50 +22,23 @@ export const useProjectLock = (projectId: string) => {
   const { toast } = useToast();
 
   const checkLock = useCallback(async () => {
-    if (!projectId) return { hasLock: false, lockInfo: null };
-
-    try {
-      console.log('Verificando bloqueio existente para projeto:', projectId);
-      
-      // Limpar bloqueios expirados primeiro
-      const { error: cleanupError } = await supabase.rpc('cleanup_expired_locks');
-      if (cleanupError) {
-        console.error('Erro ao limpar bloqueios expirados:', cleanupError);
+    const result = await checkProjectLock(projectId);
+    
+    if (result.hasLock && result.lockInfo) {
+      setIsLocked(true);
+      setLockInfo(result.lockInfo);
+      setIsOwnLock(result.lockInfo.user_id === user?.id);
+      if (result.lockInfo.user_id === user?.id) {
+        setLockId(result.lockInfo.id);
       }
-
-      // Verificar se existe bloqueio ativo
-      const { data: locks, error } = await supabase
-        .from('project_locks')
-        .select('*')
-        .eq('project_id', projectId)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Erro ao verificar bloqueio:', error);
-        return { hasLock: false, lockInfo: null };
-      }
-
-      if (locks) {
-        console.log('Bloqueio encontrado:', locks);
-        setIsLocked(true);
-        setLockInfo(locks);
-        setIsOwnLock(locks.user_id === user?.id);
-        if (locks.user_id === user?.id) {
-          setLockId(locks.id);
-        }
-        return { hasLock: true, lockInfo: locks };
-      } else {
-        console.log('Nenhum bloqueio encontrado');
-        setIsLocked(false);
-        setLockInfo(null);
-        setIsOwnLock(false);
-        setLockId(null);
-        return { hasLock: false, lockInfo: null };
-      }
-    } catch (error) {
-      console.error('Erro ao verificar bloqueio:', error);
-      return { hasLock: false, lockInfo: null };
+    } else {
+      setIsLocked(false);
+      setLockInfo(null);
+      setIsOwnLock(false);
+      setLockId(null);
     }
+    
+    return result;
   }, [projectId, user?.id]);
 
   const acquireLock = useCallback(async (): Promise<boolean> => {
@@ -105,22 +77,11 @@ export const useProjectLock = (projectId: string) => {
       }
 
       // Tentar criar o bloqueio
-      console.log('Criando novo bloqueio...');
-      const { data, error } = await supabase
-        .from('project_locks')
-        .insert({
-          project_id: projectId,
-          user_id: user.id,
-          user_name: user.email || 'Usuário Desconhecido'
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Erro ao criar bloqueio:', error);
-        
+      const result = await createProjectLock(projectId, user.id, user.email || 'Usuário Desconhecido');
+      
+      if (!result.success) {
         // Se houve erro de violação de chave única, verificar novamente
-        if (error.code === '23505') {
+        if (result.error?.includes('duplicate') || result.error?.includes('unique')) {
           const recheckResult = await checkLock();
           if (recheckResult.hasLock && recheckResult.lockInfo?.user_id !== user.id) {
             toast({
@@ -141,18 +102,21 @@ export const useProjectLock = (projectId: string) => {
       }
 
       // Bloqueio criado com sucesso
-      console.log('Bloqueio criado com sucesso:', data);
-      setIsLocked(true);
-      setIsOwnLock(true);
-      setLockId(data.id);
-      setLockInfo(data);
+      if (result.lock) {
+        setIsLocked(true);
+        setIsOwnLock(true);
+        setLockId(result.lock.id);
+        setLockInfo(result.lock);
+        
+        toast({
+          title: "Modo de edição ativo",
+          description: "Você agora pode editar este projeto.",
+        });
+        
+        return true;
+      }
       
-      toast({
-        title: "Modo de edição ativo",
-        description: "Você agora pode editar este projeto.",
-      });
-      
-      return true;
+      return false;
     } catch (error) {
       console.error('Erro ao adquirir bloqueio:', error);
       toast({
@@ -174,15 +138,10 @@ export const useProjectLock = (projectId: string) => {
 
     try {
       setIsLoading(true);
-      console.log('Liberando bloqueio:', lockId);
       
-      const { error } = await supabase
-        .from('project_locks')
-        .delete()
-        .eq('id', lockId);
-
-      if (error) {
-        console.error('Erro ao liberar bloqueio:', error);
+      const success = await deleteProjectLock(lockId);
+      
+      if (!success) {
         if (showToast) {
           toast({
             title: "Erro",
@@ -193,7 +152,6 @@ export const useProjectLock = (projectId: string) => {
         return false;
       }
 
-      console.log('Bloqueio liberado com sucesso');
       setIsLocked(false);
       setLockInfo(null);
       setIsOwnLock(false);
@@ -224,24 +182,7 @@ export const useProjectLock = (projectId: string) => {
 
   const renewLock = useCallback(async () => {
     if (!lockId) return;
-
-    try {
-      console.log('Renovando bloqueio:', lockId);
-      const { error } = await supabase
-        .from('project_locks')
-        .update({
-          expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
-        })
-        .eq('id', lockId);
-
-      if (error) {
-        console.error('Erro ao renovar bloqueio:', error);
-      } else {
-        console.log('Bloqueio renovado com sucesso');
-      }
-    } catch (error) {
-      console.error('Erro ao renovar bloqueio:', error);
-    }
+    await renewProjectLock(lockId);
   }, [lockId]);
 
   // Verificar bloqueio inicial quando o componente monta
@@ -255,8 +196,7 @@ export const useProjectLock = (projectId: string) => {
   useEffect(() => {
     if (!isOwnLock || !lockId) return;
 
-    const interval = setInterval(renewLock, 5 * 60 * 1000); // Renovar a cada 5 minutos
-
+    const interval = setInterval(renewLock, LOCK_RENEWAL_INTERVAL);
     return () => clearInterval(interval);
   }, [isOwnLock, lockId, renewLock]);
 
@@ -264,23 +204,7 @@ export const useProjectLock = (projectId: string) => {
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (lockId) {
-        console.log('Página sendo fechada, liberando bloqueio via fetch');
-        // Usar fetch simples para liberar o bloqueio de forma síncrona
-        const SUPABASE_URL = "https://skdrkfwymmgssluhakwl.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZHJrZnd5bW1nc3NsdWhha3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4NDgwOTYsImV4cCI6MjA2MTQyNDA5Nn0.Hez1eKgXjBTQvY7qi3WxN5ZZDiGAdvTKathEeO0ZCb8";
-        
-        try {
-          fetch(`${SUPABASE_URL}/rest/v1/project_locks?id=eq.${lockId}`, {
-            method: 'DELETE',
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${SUPABASE_KEY}`
-            }
-          });
-        } catch (error) {
-          console.error('Erro ao liberar bloqueio no beforeunload:', error);
-        }
+        releaseLockOnPageUnload(lockId);
       }
     };
 
