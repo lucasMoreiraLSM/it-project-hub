@@ -72,12 +72,12 @@ export const useProjects = () => {
           product_owner: project.productOwner,
           gerente_projetos: project.gerenteProjetos,
           lider_projetos_ti: project.liderProjetosTI,
-          escopo: project.escopo,
-          objetivos: project.objetivos,
-          etapas_executadas: project.etapasExecutadas,
+          escopo: project.escopo as any,
+          objetivos: project.objetivos as any,
+          etapas_executadas: project.etapasExecutadas as any,
           proximas_etapas: project.proximasEtapas as any,
           cronograma: project.cronograma as any,
-          pontos_atencao: project.pontosAtencao,
+          pontos_atencao: project.pontosAtencao as any,
           estrategico_tatico: project.estrategicoTatico,
           user_id: user.id
         })
@@ -112,12 +112,12 @@ export const useProjects = () => {
           product_owner: project.productOwner,
           gerente_projetos: project.gerenteProjetos,
           lider_projetos_ti: project.liderProjetosTI,
-          escopo: project.escopo,
-          objetivos: project.objetivos,
-          etapas_executadas: project.etapasExecutadas,
+          escopo: project.escopo as any,
+          objetivos: project.objetivos as any,
+          etapas_executadas: project.etapasExecutadas as any,
           proximas_etapas: project.proximasEtapas as any,
           cronograma: project.cronograma as any,
-          pontos_atencao: project.pontosAtencao,
+          pontos_atencao: project.pontosAtencao as any,
           estrategico_tatico: project.estrategicoTatico,
           updated_at: new Date().toISOString()
         })

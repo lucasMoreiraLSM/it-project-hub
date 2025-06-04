@@ -172,11 +172,26 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({ project, onBack })
             </CardHeader>
             <CardContent>
               {project.etapasExecutadas.length > 0 ? (
-                <ul className="list-disc list-inside space-y-1">
-                  {project.etapasExecutadas.map((etapa, index) => (
-                    <li key={index} className="text-gray-700">{etapa}</li>
-                  ))}
-                </ul>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-200">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="border border-gray-200 p-2 text-left">Atividade</th>
+                        <th className="border border-gray-200 p-2 text-left">Data de Conclusão</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {project.etapasExecutadas.map((etapa, index) => (
+                        <tr key={index}>
+                          <td className="border border-gray-200 p-2">{etapa.atividade}</td>
+                          <td className="border border-gray-200 p-2">
+                            {etapa.dataConclusao ? new Date(etapa.dataConclusao).toLocaleDateString('pt-BR') : 'Não informado'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
                 <p className="text-gray-500">Nenhuma etapa executada</p>
               )}
