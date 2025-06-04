@@ -77,31 +77,46 @@ export const useProjectLock = (projectId: string) => {
       setIsLoading(true);
       console.log('Tentando adquirir bloqueio para projeto:', projectId, 'usuário:', user.id);
       
-      // Verificar se já existe bloqueio ativo antes de tentar criar
-      const lockCheck = await checkLock();
-      
-      if (lockCheck.hasLock && lockCheck.lockInfo?.user_id !== user.id) {
-        // Projeto já está bloqueado por outro usuário
-        console.log('Projeto bloqueado por outro usuário:', lockCheck.lockInfo?.user_name);
-        toast({
-          title: "Projeto em edição",
-          description: `Este projeto está sendo editado por ${lockCheck.lockInfo?.user_name}`,
-          variant: "destructive",
-        });
-        return false;
+      // Limpar bloqueios expirados primeiro
+      await supabase.rpc('cleanup_expired_locks');
+
+      // Verificar se já existe bloqueio ativo
+      const { data: existingLock, error: checkError } = await supabase
+        .from('project_locks')
+        .select('*')
+        .eq('project_id', projectId)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Erro ao verificar bloqueio existente:', checkError);
+        throw checkError;
       }
 
-      // Se já é nosso bloqueio, apenas retornar true
-      if (lockCheck.hasLock && lockCheck.lockInfo?.user_id === user.id) {
-        console.log('Bloqueio já pertence ao usuário atual');
-        setIsLocked(true);
-        setIsOwnLock(true);
-        setLockId(lockCheck.lockInfo.id);
-        setLockInfo(lockCheck.lockInfo);
-        return true;
+      if (existingLock) {
+        if (existingLock.user_id === user.id) {
+          // Já é nosso bloqueio
+          console.log('Bloqueio já pertence ao usuário atual');
+          setIsLocked(true);
+          setIsOwnLock(true);
+          setLockId(existingLock.id);
+          setLockInfo(existingLock);
+          return true;
+        } else {
+          // Projeto bloqueado por outro usuário
+          console.log('Projeto bloqueado por outro usuário:', existingLock.user_name);
+          toast({
+            title: "Projeto em edição",
+            description: `Este projeto está sendo editado por ${existingLock.user_name}`,
+            variant: "destructive",
+          });
+          setIsLocked(true);
+          setIsOwnLock(false);
+          setLockInfo(existingLock);
+          return false;
+        }
       }
 
-      // Tentar criar o bloqueio na tabela project_locks
+      // Tentar criar o bloqueio
       console.log('Criando novo bloqueio...');
       const { data, error } = await supabase
         .from('project_locks')
@@ -115,13 +130,13 @@ export const useProjectLock = (projectId: string) => {
 
       if (error) {
         console.error('Erro ao criar bloqueio:', error);
-        if (error.code === '23505') { // Violação de chave única - projeto já bloqueado
-          console.log('Conflito de bloqueio detectado, verificando novamente...');
-          const lockCheck = await checkLock();
-          if (lockCheck.hasLock && lockCheck.lockInfo?.user_id !== user.id) {
+        if (error.code === '23505') { // Violação de chave única
+          // Verificar novamente se alguém criou o bloqueio no meio tempo
+          const recheck = await checkLock();
+          if (recheck.hasLock && recheck.lockInfo?.user_id !== user.id) {
             toast({
               title: "Projeto em edição",
-              description: `Este projeto está sendo editado por ${lockCheck.lockInfo?.user_name}`,
+              description: `Este projeto está sendo editado por ${recheck.lockInfo?.user_name}`,
               variant: "destructive",
             });
           }
@@ -171,7 +186,6 @@ export const useProjectLock = (projectId: string) => {
       setIsLoading(true);
       console.log('Liberando bloqueio:', lockId);
       
-      // Deletar o registro da tabela project_locks
       const { error } = await supabase
         .from('project_locks')
         .delete()
@@ -219,7 +233,7 @@ export const useProjectLock = (projectId: string) => {
       const { error } = await supabase
         .from('project_locks')
         .update({
-          expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutos a partir de agora
+          expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
         })
         .eq('id', lockId);
 
@@ -229,6 +243,13 @@ export const useProjectLock = (projectId: string) => {
       console.error('Erro ao renovar bloqueio:', error);
     }
   }, [lockId]);
+
+  // Verificar bloqueio inicial quando o componente monta
+  useEffect(() => {
+    if (projectId) {
+      checkLock();
+    }
+  }, [projectId, checkLock]);
 
   // Renovar bloqueio automaticamente se for nosso
   useEffect(() => {
@@ -244,14 +265,12 @@ export const useProjectLock = (projectId: string) => {
     const handleBeforeUnload = () => {
       if (lockId) {
         console.log('Página sendo fechada, liberando bloqueio via beacon');
-        // Usar navigator.sendBeacon para requisição assíncrona no fechamento da página
         const url = `https://skdrkfwymmgssluhakwl.supabase.co/rest/v1/project_locks?id=eq.${lockId}`;
         const headers = {
           'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZHJrZnd5bW1nc3NsdWhha3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4NDgwOTYsImV4cCI6MjA2MTQyNDA5Nn0.Hez1eKgXjBTQvY7qi3WxN5ZZDiGAdvTKathEeO0ZCb8',
           'Content-Type': 'application/json'
         };
         
-        // Criar uma requisição DELETE usando fetch dentro de um try-catch
         try {
           fetch(url, {
             method: 'DELETE',
@@ -271,16 +290,13 @@ export const useProjectLock = (projectId: string) => {
       }
     };
 
-    // Adicionar listeners
     window.addEventListener('beforeunload', handleBeforeUnload);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Cleanup quando o componente for desmontado
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       
-      // Liberar bloqueio de forma assíncrona quando o componente for desmontado
       if (lockId) {
         releaseLock(false);
       }
