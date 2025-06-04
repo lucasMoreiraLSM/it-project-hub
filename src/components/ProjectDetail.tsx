@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Project } from '@/types/project';
+import { Project, ProximaEtapa, EtapaExecutada } from '@/types/project';
 import { 
   calculatePercentualPrevisto, 
   calculatePercentualRealizado, 
@@ -15,7 +14,7 @@ import {
   getDiasNaEtapa,
   getStatusCronograma
 } from '@/utils/projectCalculations';
-import { ArrowLeft, Plus, X } from 'lucide-react';
+import { ArrowLeft, Plus, X, Check } from 'lucide-react';
 
 interface ProjectDetailProps {
   project: Project;
@@ -58,6 +57,26 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack, o
     setEditedProject({
       ...editedProject,
       [field]: updatedList
+    });
+  };
+
+  const concluirEtapa = (index: number) => {
+    const proximaEtapa = editedProject.proximasEtapas[index];
+    const novaEtapaExecutada: EtapaExecutada = {
+      atividade: proximaEtapa.atividade,
+      dataConclusao: new Date().toISOString().split('T')[0] // Data atual no formato YYYY-MM-DD
+    };
+
+    // Remove da lista de próximas etapas
+    const novasProximasEtapas = editedProject.proximasEtapas.filter((_, i) => i !== index);
+    
+    // Adiciona à lista de etapas executadas
+    const novasEtapasExecutadas = [...editedProject.etapasExecutadas, novaEtapaExecutada];
+
+    setEditedProject({
+      ...editedProject,
+      proximasEtapas: novasProximasEtapas,
+      etapasExecutadas: novasEtapasExecutadas
     });
   };
 
@@ -286,7 +305,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack, o
                 ✅ Etapas Executadas
                 <Button
                   size="sm"
-                  onClick={() => addToList('etapasExecutadas', '')}
+                  onClick={() => addToList('etapasExecutadas', { atividade: '', dataConclusao: '' })}
                   className="flex items-center gap-1"
                 >
                   <Plus className="h-3 w-3" />
@@ -295,23 +314,45 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack, o
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {editedProject.etapasExecutadas.map((item, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <Input
-                      value={item}
-                      onChange={(e) => updateListItem('etapasExecutadas', index, e.target.value)}
-                      placeholder="Atividade executada"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeFromList('etapasExecutadas', index)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-200">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="border border-gray-200 p-2 text-left">Atividade</th>
+                      <th className="border border-gray-200 p-2 text-left">Data de Conclusão</th>
+                      <th className="border border-gray-200 p-2 text-left">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {editedProject.etapasExecutadas.map((etapa, index) => (
+                      <tr key={index}>
+                        <td className="border border-gray-200 p-2">
+                          <Input
+                            value={etapa.atividade}
+                            onChange={(e) => updateListItem('etapasExecutadas', index, { ...etapa, atividade: e.target.value })}
+                            placeholder="Atividade executada"
+                          />
+                        </td>
+                        <td className="border border-gray-200 p-2">
+                          <Input
+                            type="date"
+                            value={etapa.dataConclusao}
+                            onChange={(e) => updateListItem('etapasExecutadas', index, { ...etapa, dataConclusao: e.target.value })}
+                          />
+                        </td>
+                        <td className="border border-gray-200 p-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeFromList('etapasExecutadas', index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </CardContent>
           </Card>
@@ -332,42 +373,65 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack, o
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {editedProject.proximasEtapas.map((etapa, index) => (
-                  <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
-                    <div>
-                      <Label>Atividade</Label>
-                      <Input
-                        value={etapa.atividade}
-                        onChange={(e) => updateListItem('proximasEtapas', index, { ...etapa, atividade: e.target.value })}
-                        placeholder="Atividade"
-                      />
-                    </div>
-                    <div>
-                      <Label>Responsável</Label>
-                      <Input
-                        value={etapa.responsavel}
-                        onChange={(e) => updateListItem('proximasEtapas', index, { ...etapa, responsavel: e.target.value })}
-                        placeholder="Responsável"
-                      />
-                    </div>
-                    <div>
-                      <Label>Previsão</Label>
-                      <Input
-                        type="date"
-                        value={etapa.previsao}
-                        onChange={(e) => updateListItem('proximasEtapas', index, { ...etapa, previsao: e.target.value })}
-                      />
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeFromList('proximasEtapas', index)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-200">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="border border-gray-200 p-2 text-left">Atividade</th>
+                      <th className="border border-gray-200 p-2 text-left">Responsável</th>
+                      <th className="border border-gray-200 p-2 text-left">Previsão</th>
+                      <th className="border border-gray-200 p-2 text-left">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {editedProject.proximasEtapas.map((etapa, index) => (
+                      <tr key={index}>
+                        <td className="border border-gray-200 p-2">
+                          <Input
+                            value={etapa.atividade}
+                            onChange={(e) => updateListItem('proximasEtapas', index, { ...etapa, atividade: e.target.value })}
+                            placeholder="Atividade"
+                          />
+                        </td>
+                        <td className="border border-gray-200 p-2">
+                          <Input
+                            value={etapa.responsavel}
+                            onChange={(e) => updateListItem('proximasEtapas', index, { ...etapa, responsavel: e.target.value })}
+                            placeholder="Responsável"
+                          />
+                        </td>
+                        <td className="border border-gray-200 p-2">
+                          <Input
+                            type="date"
+                            value={etapa.previsao}
+                            onChange={(e) => updateListItem('proximasEtapas', index, { ...etapa, previsao: e.target.value })}
+                          />
+                        </td>
+                        <td className="border border-gray-200 p-2">
+                          <div className="flex gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => concluirEtapa(index)}
+                              className="flex items-center gap-1 text-green-600 hover:text-green-700"
+                              title="Concluir etapa"
+                            >
+                              <Check className="h-3 w-3" />
+                              Concluir
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeFromList('proximasEtapas', index)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </CardContent>
           </Card>

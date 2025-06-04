@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Project } from '@/types/project';
+import { Project, EtapaExecutada } from '@/types/project';
 import { useToast } from '@/hooks/use-toast';
 
 export const useProjects = () => {
@@ -30,7 +30,13 @@ export const useProjects = () => {
         liderProjetosTI: projeto.lider_projetos_ti || '',
         escopo: Array.isArray(projeto.escopo) ? projeto.escopo as string[] : [],
         objetivos: Array.isArray(projeto.objetivos) ? projeto.objetivos as string[] : [],
-        etapasExecutadas: Array.isArray(projeto.etapas_executadas) ? projeto.etapas_executadas as string[] : [],
+        etapasExecutadas: Array.isArray(projeto.etapas_executadas) ? 
+          projeto.etapas_executadas.map((etapa: any) => {
+            if (typeof etapa === 'string') {
+              return { atividade: etapa, dataConclusao: '' };
+            }
+            return etapa as EtapaExecutada;
+          }) : [],
         proximasEtapas: Array.isArray(projeto.proximas_etapas) ? projeto.proximas_etapas as any[] : [],
         cronograma: Array.isArray(projeto.cronograma) ? projeto.cronograma as any[] : [],
         pontosAtencao: Array.isArray(projeto.pontos_atencao) ? projeto.pontos_atencao as string[] : [],

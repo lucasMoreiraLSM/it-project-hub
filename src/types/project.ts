@@ -5,6 +5,11 @@ export interface ProximaEtapa {
   previsao: string;
 }
 
+export interface EtapaExecutada {
+  atividade: string;
+  dataConclusao: string;
+}
+
 export interface CronogramaItem {
   etapa: string;
   inicio: string;
@@ -25,7 +30,7 @@ export interface Project {
   liderProjetosTI: string;
   escopo: string[];
   objetivos: string[];
-  etapasExecutadas: string[];
+  etapasExecutadas: EtapaExecutada[];
   proximasEtapas: ProximaEtapa[];
   cronograma: CronogramaItem[];
   pontosAtencao: string[];
