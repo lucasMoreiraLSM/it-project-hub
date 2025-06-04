@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Lock, Clock, Edit } from 'lucide-react';
+import { ArrowLeft, Lock, Clock, Edit, Save } from 'lucide-react';
 
 interface ProjectDetailHeaderProps {
   canEdit: boolean;
@@ -10,7 +10,8 @@ interface ProjectDetailHeaderProps {
   isLoading?: boolean;
   onBack: () => void;
   onSave: () => void;
-  onUnlock?: () => void;
+  onEdit: () => void;
+  isEditMode: boolean;
   lastUpdatedByName?: string;
   lastUpdatedAt?: string;
 }
@@ -26,7 +27,8 @@ export const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
   isLoading = false,
   onBack,
   onSave,
-  onUnlock,
+  onEdit,
+  isEditMode,
   lastUpdatedByName,
   lastUpdatedAt
 }) => {
@@ -36,7 +38,9 @@ export const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
           <ArrowLeft className="h-4 w-4" />
           Voltar
         </Button>
-        <h1 className="text-3xl font-bold text-gray-900">Detalhes do Projeto</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          {isEditMode ? 'Editando Projeto' : 'Detalhes do Projeto'}
+        </h1>
         
         <div className="flex items-center gap-4 ml-auto">
           {lastUpdatedByName && <div className="text-sm text-gray-600 flex items-center gap-2">
@@ -48,15 +52,22 @@ export const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
               </span>
             </div>}
           
-          {isOwnLock && onUnlock && <Button variant="outline" onClick={onUnlock} disabled={isLoading} className="flex items-center gap-2 text-[#a43600] hover:text-[#a43600] border-[#a43600] hover:border-[#a43600]">
-              <Edit className="h-4 w-4" />
-              Editar
-            </Button>}
-          
-          <Button onClick={onSave} disabled={!canEdit || isLoading} className="flex items-center gap-2">
-            {canEdit ? 'Salvar Alterações' : 'Projeto Bloqueado'}
-            {!canEdit && <Lock className="h-4 w-4" />}
+          <Button 
+            variant="outline" 
+            onClick={onEdit} 
+            disabled={isLoading} 
+            className="flex items-center gap-2 text-[#a43600] hover:text-[#a43600] border-[#a43600] hover:border-[#a43600]"
+          >
+            <Edit className="h-4 w-4" />
+            {isEditMode ? 'Parar Edição' : 'Editar'}
           </Button>
+          
+          {isEditMode && (
+            <Button onClick={onSave} disabled={isLoading} className="flex items-center gap-2">
+              <Save className="h-4 w-4" />
+              Salvar Alterações
+            </Button>
+          )}
         </div>
       </div>
 
@@ -64,7 +75,7 @@ export const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
           <Lock className="h-4 w-4" />
           <AlertDescription>
             Você está editando este projeto. O bloqueio será renovado automaticamente enquanto você estiver ativo.
-            {isOwnLock && " Você pode parar de editar o projeto a qualquer momento usando o botão 'Editar'."}
+            Você pode parar de editar o projeto a qualquer momento usando o botão 'Parar Edição'.
           </AlertDescription>
         </Alert>}
     </>;

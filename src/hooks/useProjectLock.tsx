@@ -21,7 +21,6 @@ export const useProjectLock = (projectId: string) => {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
-  const hasCheckedInitial = useRef(false);
 
   const checkLock = useCallback(async () => {
     if (!projectId) return;
@@ -52,8 +51,8 @@ export const useProjectLock = (projectId: string) => {
           setLockId(locks.id);
         }
         
-        // Se for a primeira verificação e o projeto estiver bloqueado por outro usuário
-        if (!hasCheckedInitial.current && locks.user_id !== user?.id) {
+        // Se o projeto estiver bloqueado por outro usuário
+        if (locks.user_id !== user?.id) {
           toast({
             title: "Projeto em edição",
             description: `Este projeto está sendo editado por ${locks.user_name}`,
@@ -66,8 +65,6 @@ export const useProjectLock = (projectId: string) => {
         setIsOwnLock(false);
         setLockId(null);
       }
-      
-      hasCheckedInitial.current = true;
     } catch (error) {
       console.error('Erro ao verificar bloqueio:', error);
     } finally {
@@ -98,11 +95,6 @@ export const useProjectLock = (projectId: string) => {
       if (error) {
         if (error.code === '23505') { // Violação de chave única - projeto já bloqueado
           await checkLock();
-          toast({
-            title: "Projeto já bloqueado",
-            description: "Este projeto está sendo editado por outro usuário.",
-            variant: "destructive",
-          });
           return false;
         }
         throw error;
@@ -174,44 +166,6 @@ export const useProjectLock = (projectId: string) => {
     }
   }, [lockId, toast]);
 
-  const forceUnlock = useCallback(async () => {
-    if (!user || !projectId || !isOwnLock) return false;
-
-    try {
-      setIsLoading(true);
-      
-      const { error } = await supabase
-        .from('project_locks')
-        .delete()
-        .eq('project_id', projectId)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      setIsLocked(false);
-      setLockInfo(null);
-      setIsOwnLock(false);
-      setLockId(null);
-      
-      toast({
-        title: "Edição finalizada",
-        description: "Você parou de editar o projeto.",
-      });
-      
-      return true;
-    } catch (error) {
-      console.error('Erro ao forçar desbloqueio:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao remover bloqueio do projeto.",
-        variant: "destructive",
-      });
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, projectId, isOwnLock, toast]);
-
   const renewLock = useCallback(async () => {
     if (!lockId) return;
 
@@ -228,16 +182,6 @@ export const useProjectLock = (projectId: string) => {
       console.error('Erro ao renovar bloqueio:', error);
     }
   }, [lockId]);
-
-  // Verificar bloqueio imediatamente ao abrir o projeto
-  useEffect(() => {
-    if (!projectId) return;
-
-    checkLock();
-    const interval = setInterval(checkLock, 30000); // Verificar a cada 30 segundos
-
-    return () => clearInterval(interval);
-  }, [checkLock, projectId]);
 
   // Renovar bloqueio automaticamente se for nosso
   useEffect(() => {
@@ -301,7 +245,6 @@ export const useProjectLock = (projectId: string) => {
     isLoading,
     acquireLock,
     releaseLock,
-    forceUnlock,
     checkLock
   };
 };

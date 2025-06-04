@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Project, EtapaExecutada } from '@/types/project';
 import { useProjectLock } from '@/hooks/useProjectLock';
@@ -26,7 +27,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
   const [editedProject, setEditedProject] = useState<Project>({
     ...project
   });
-  const [canEdit, setCanEdit] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   
   const { 
     isLocked, 
@@ -34,39 +35,42 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
     isOwnLock, 
     isLoading, 
     acquireLock, 
-    releaseLock, 
-    forceUnlock 
+    releaseLock,
+    checkLock
   } = useProjectLock(project.id);
 
-  // Verificar bloqueio e tentar adquirir quando o projeto for aberto
-  useEffect(() => {
-    const initializeProject = async () => {
-      // Aguardar um pouco para o hook verificar o bloqueio atual
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      if (!isLocked) {
-        // Se não estiver bloqueado, tentar adquirir bloqueio
-        const acquired = await acquireLock();
-        setCanEdit(acquired);
-      } else if (isOwnLock) {
-        // Se for nosso bloqueio, podemos editar
-        setCanEdit(true);
-      } else {
-        // Se estiver bloqueado por outro usuário, não podemos editar
-        setCanEdit(false);
+  const handleEditClick = async () => {
+    if (isEditMode) {
+      // Se já está editando, parar edição
+      const success = await releaseLock();
+      if (success) {
+        setIsEditMode(false);
       }
-    };
-
-    initializeProject();
-  }, [isLocked, isOwnLock, acquireLock]);
+    } else {
+      // Verificar se está bloqueado por outro usuário
+      await checkLock();
+      
+      // Se estiver bloqueado por outro usuário, mostrar visualização bloqueada
+      if (isLocked && !isOwnLock) {
+        return;
+      }
+      
+      // Tentar adquirir bloqueio
+      const acquired = await acquireLock();
+      if (acquired) {
+        setIsEditMode(true);
+      }
+    }
+  };
 
   const handleSave = async () => {
-    if (!canEdit) return;
+    if (!isEditMode) return;
     
     try {
       await onUpdate(editedProject);
       console.log('Projeto salvo, liberando bloqueio...');
       await releaseLock();
+      setIsEditMode(false);
       onBack();
     } catch (error) {
       console.error('Erro ao salvar projeto:', error);
@@ -74,18 +78,11 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
   };
 
   const handleBack = async () => {
-    if (canEdit && isOwnLock) {
+    if (isEditMode && isOwnLock) {
       console.log('Voltando, liberando bloqueio...');
       await releaseLock();
     }
     onBack();
-  };
-
-  const handleUnlock = async () => {
-    const success = await forceUnlock();
-    if (success) {
-      setCanEdit(false);
-    }
   };
 
   const handleUpdate = (field: keyof Project, value: any) => {
@@ -138,7 +135,8 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
     });
   };
 
-  if (isLocked && !isOwnLock) {
+  // Se o projeto está bloqueado por outro usuário e tentamos editar
+  if (isLocked && !isOwnLock && isEditMode) {
     return (
       <ProjectLockedView 
         project={project} 
@@ -152,12 +150,13 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         <ProjectDetailHeader
-          canEdit={canEdit}
+          canEdit={isEditMode}
           isOwnLock={isOwnLock}
           isLoading={isLoading}
           onBack={handleBack}
           onSave={handleSave}
-          onUnlock={handleUnlock}
+          onEdit={handleEditClick}
+          isEditMode={isEditMode}
           lastUpdatedByName={project.lastUpdatedByName}
           lastUpdatedAt={project.lastUpdatedAt}
         />
@@ -166,13 +165,13 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
           <ProjectBasicInfo
             project={editedProject}
             onUpdate={handleUpdate}
-            canEdit={canEdit}
+            canEdit={isEditMode}
           />
 
           <ProjectResponsibles
             project={editedProject}
             onUpdate={handleUpdate}
-            canEdit={canEdit}
+            canEdit={isEditMode}
           />
 
           <ProjectScope
@@ -180,7 +179,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             addToList={addToList}
             removeFromList={removeFromList}
             updateListItem={updateListItem}
-            canEdit={canEdit}
+            canEdit={isEditMode}
             onUpdate={handleUpdate}
           />
 
@@ -189,7 +188,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             addToList={addToList}
             removeFromList={removeFromList}
             updateListItem={updateListItem}
-            canEdit={canEdit}
+            canEdit={isEditMode}
             onUpdate={handleUpdate}
           />
 
@@ -198,7 +197,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             addToList={addToList}
             removeFromList={removeFromList}
             updateListItem={updateListItem}
-            canEdit={canEdit}
+            canEdit={isEditMode}
             onUpdate={handleUpdate}
           />
 
@@ -208,7 +207,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             removeFromList={removeFromList}
             updateListItem={updateListItem}
             onCompleteStep={concluirEtapa}
-            canEdit={canEdit}
+            canEdit={isEditMode}
             onUpdate={handleUpdate}
           />
 
@@ -217,7 +216,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             addToList={addToList}
             removeFromList={removeFromList}
             updateListItem={updateListItem}
-            canEdit={canEdit}
+            canEdit={isEditMode}
             onUpdate={handleUpdate}
           />
 
@@ -226,7 +225,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             addToList={addToList}
             removeFromList={removeFromList}
             updateListItem={updateListItem}
-            canEdit={canEdit}
+            canEdit={isEditMode}
             onUpdate={handleUpdate}
           />
         </div>
