@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -503,7 +504,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                   </thead>
                   <tbody>
                     {editedProject.cronograma.map((item, index) => {
-                      const diasNaEtapa = getDiasNaEtapa(item.inicio);
+                      const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
                       const status = getStatusCronograma(item);
                       const hoje = new Date().toLocaleDateString('pt-BR');
                       
