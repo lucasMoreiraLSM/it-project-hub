@@ -18,6 +18,7 @@ export const useProjectLock = (projectId: string) => {
   const [lockInfo, setLockInfo] = useState<ProjectLock | null>(null);
   const [isOwnLock, setIsOwnLock] = useState(false);
   const [lockId, setLockId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -25,6 +26,8 @@ export const useProjectLock = (projectId: string) => {
     if (!projectId) return;
 
     try {
+      setIsLoading(true);
+      
       // Primeiro, limpar bloqueios expirados
       await supabase.rpc('cleanup_expired_locks');
 
@@ -33,7 +36,7 @@ export const useProjectLock = (projectId: string) => {
         .from('project_locks')
         .select('*')
         .eq('project_id', projectId)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Erro ao verificar bloqueio:', error);
@@ -55,6 +58,8 @@ export const useProjectLock = (projectId: string) => {
       }
     } catch (error) {
       console.error('Erro ao verificar bloqueio:', error);
+    } finally {
+      setIsLoading(false);
     }
   }, [projectId, user?.id]);
 
@@ -62,6 +67,8 @@ export const useProjectLock = (projectId: string) => {
     if (!user || !projectId) return false;
 
     try {
+      setIsLoading(true);
+      
       // Primeiro, limpar bloqueios expirados
       await supabase.rpc('cleanup_expired_locks');
 
@@ -79,6 +86,11 @@ export const useProjectLock = (projectId: string) => {
       if (error) {
         if (error.code === '23505') { // Violação de chave única - projeto já bloqueado
           await checkLock();
+          toast({
+            title: "Projeto já bloqueado",
+            description: "Este projeto está sendo editado por outro usuário.",
+            variant: "destructive",
+          });
           return false;
         }
         throw error;
@@ -88,17 +100,32 @@ export const useProjectLock = (projectId: string) => {
       setIsOwnLock(true);
       setLockId(data.id);
       setLockInfo(data);
+      
+      toast({
+        title: "Projeto bloqueado",
+        description: "Você agora tem controle exclusivo para editar este projeto.",
+      });
+      
       return true;
     } catch (error) {
       console.error('Erro ao adquirir bloqueio:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível bloquear o projeto para edição.",
+        variant: "destructive",
+      });
       return false;
+    } finally {
+      setIsLoading(false);
     }
-  }, [user, projectId, checkLock]);
+  }, [user, projectId, checkLock, toast]);
 
-  const releaseLock = useCallback(async () => {
+  const releaseLock = useCallback(async (showToast: boolean = true) => {
     if (!lockId) return;
 
     try {
+      setIsLoading(true);
+      
       const { error } = await supabase
         .from('project_locks')
         .delete()
@@ -111,11 +138,65 @@ export const useProjectLock = (projectId: string) => {
       setIsOwnLock(false);
       setLockId(null);
       
+      if (showToast) {
+        toast({
+          title: "Projeto desbloqueado",
+          description: "O projeto foi liberado para edição por outros usuários.",
+        });
+      }
+      
       console.log('Bloqueio liberado com sucesso');
     } catch (error) {
       console.error('Erro ao liberar bloqueio:', error);
+      if (showToast) {
+        toast({
+          title: "Erro",
+          description: "Erro ao liberar bloqueio do projeto.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
-  }, [lockId]);
+  }, [lockId, toast]);
+
+  const forceUnlock = useCallback(async () => {
+    if (!user || !projectId || !isOwnLock) return false;
+
+    try {
+      setIsLoading(true);
+      
+      const { error } = await supabase
+        .from('project_locks')
+        .delete()
+        .eq('project_id', projectId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setIsLocked(false);
+      setLockInfo(null);
+      setIsOwnLock(false);
+      setLockId(null);
+      
+      toast({
+        title: "Bloqueio removido",
+        description: "Você removeu seu próprio bloqueio do projeto.",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Erro ao forçar desbloqueio:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover bloqueio do projeto.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, projectId, isOwnLock, toast]);
 
   const renewLock = useCallback(async () => {
     if (!lockId) return;
@@ -134,12 +215,12 @@ export const useProjectLock = (projectId: string) => {
     }
   }, [lockId]);
 
-  // Verificar bloqueio periodicamente
+  // Verificar bloqueio com menos frequência para melhorar performance
   useEffect(() => {
     if (!projectId) return;
 
     checkLock();
-    const interval = setInterval(checkLock, 30000); // Verificar a cada 30 segundos
+    const interval = setInterval(checkLock, 45000); // Verificar a cada 45 segundos
 
     return () => clearInterval(interval);
   }, [checkLock, projectId]);
@@ -182,7 +263,7 @@ export const useProjectLock = (projectId: string) => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       // Liberar bloqueio de forma assíncrona quando o componente for desmontado
       if (lockId) {
-        releaseLock();
+        releaseLock(false); // Não mostrar toast ao desmontar
       }
     };
   }, [lockId, releaseLock]);
@@ -191,8 +272,10 @@ export const useProjectLock = (projectId: string) => {
     isLocked,
     lockInfo,
     isOwnLock,
+    isLoading,
     acquireLock,
     releaseLock,
+    forceUnlock,
     checkLock
   };
 };

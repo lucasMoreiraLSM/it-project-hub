@@ -2,12 +2,15 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Lock, Clock } from 'lucide-react';
+import { ArrowLeft, Lock, Clock, Unlock } from 'lucide-react';
 
 interface ProjectDetailHeaderProps {
   canEdit: boolean;
+  isOwnLock: boolean;
+  isLoading?: boolean;
   onBack: () => void;
   onSave: () => void;
+  onUnlock?: () => void;
   lastUpdatedByName?: string;
   lastUpdatedAt?: string;
 }
@@ -19,8 +22,11 @@ const formatDate = (dateString?: string) => {
 
 export const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
   canEdit,
+  isOwnLock,
+  isLoading = false,
   onBack,
   onSave,
+  onUnlock,
   lastUpdatedByName,
   lastUpdatedAt
 }) => {
@@ -45,7 +51,23 @@ export const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
             </div>
           )}
           
-          <Button onClick={onSave} disabled={!canEdit} className="flex items-center gap-2">
+          {isOwnLock && onUnlock && (
+            <Button 
+              variant="outline" 
+              onClick={onUnlock} 
+              disabled={isLoading}
+              className="flex items-center gap-2 text-orange-600 hover:text-orange-700"
+            >
+              <Unlock className="h-4 w-4" />
+              Desbloquear Projeto
+            </Button>
+          )}
+          
+          <Button 
+            onClick={onSave} 
+            disabled={!canEdit || isLoading} 
+            className="flex items-center gap-2"
+          >
             {canEdit ? 'Salvar Alterações' : 'Projeto Bloqueado'}
             {!canEdit && <Lock className="h-4 w-4" />}
           </Button>
@@ -57,6 +79,7 @@ export const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
           <Lock className="h-4 w-4" />
           <AlertDescription>
             Você está editando este projeto. O bloqueio será renovado automaticamente enquanto você estiver ativo.
+            {isOwnLock && " Você pode desbloquear o projeto a qualquer momento usando o botão 'Desbloquear Projeto'."}
           </AlertDescription>
         </Alert>
       )}

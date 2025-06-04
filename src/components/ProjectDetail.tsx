@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Project, EtapaExecutada } from '@/types/project';
 import { useProjectLock } from '@/hooks/useProjectLock';
@@ -29,7 +28,15 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
   });
   const [canEdit, setCanEdit] = useState(false);
   
-  const { isLocked, lockInfo, isOwnLock, acquireLock, releaseLock } = useProjectLock(project.id);
+  const { 
+    isLocked, 
+    lockInfo, 
+    isOwnLock, 
+    isLoading, 
+    acquireLock, 
+    releaseLock, 
+    forceUnlock 
+  } = useProjectLock(project.id);
 
   useEffect(() => {
     const tryAcquireLock = async () => {
@@ -65,6 +72,13 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       await releaseLock();
     }
     onBack();
+  };
+
+  const handleUnlock = async () => {
+    const success = await forceUnlock();
+    if (success) {
+      setCanEdit(false);
+    }
   };
 
   const handleUpdate = (field: keyof Project, value: any) => {
@@ -132,8 +146,11 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       <div className="max-w-6xl mx-auto">
         <ProjectDetailHeader
           canEdit={canEdit}
+          isOwnLock={isOwnLock}
+          isLoading={isLoading}
           onBack={handleBack}
           onSave={handleSave}
+          onUnlock={handleUnlock}
           lastUpdatedByName={project.lastUpdatedByName}
           lastUpdatedAt={project.lastUpdatedAt}
         />
