@@ -9,7 +9,7 @@ export const ProjectHeader = () => {
   } = useAuth();
   return <div className="border-b border-gray-200 px-6 py-4 bg-[183989_] bg-[#183989]">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <h1 className="text-2xl text-slate-50 mx-0 my-0 px-0 py-0 font-extrabold">IT Project Hub - Tecnologia da informação </h1>
+        <h1 className="text-2xl text-slate-50 mx-0 my-0 px-0 py-0 font-extrabold">IT Project Hub - Gestão de Projetos </h1>
         
         {user && <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
