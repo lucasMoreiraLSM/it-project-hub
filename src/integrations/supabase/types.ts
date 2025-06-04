@@ -33,6 +33,41 @@ export type Database = {
         }
         Relationships: []
       }
+      project_locks: {
+        Row: {
+          expires_at: string
+          id: string
+          locked_at: string
+          project_id: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          expires_at?: string
+          id?: string
+          locked_at?: string
+          project_id: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          expires_at?: string
+          id?: string
+          locked_at?: string
+          project_id?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_locks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projetos: {
         Row: {
           area_negocio: string | null
@@ -44,6 +79,8 @@ export type Database = {
           gerente_projetos: string | null
           id: string
           inovacao_melhoria: string | null
+          last_updated_at: string | null
+          last_updated_by_name: string | null
           lider_projetos_ti: string | null
           nome: string
           objetivos: Json | null
@@ -65,6 +102,8 @@ export type Database = {
           gerente_projetos?: string | null
           id?: string
           inovacao_melhoria?: string | null
+          last_updated_at?: string | null
+          last_updated_by_name?: string | null
           lider_projetos_ti?: string | null
           nome: string
           objetivos?: Json | null
@@ -86,6 +125,8 @@ export type Database = {
           gerente_projetos?: string | null
           id?: string
           inovacao_melhoria?: string | null
+          last_updated_at?: string | null
+          last_updated_by_name?: string | null
           lider_projetos_ti?: string | null
           nome?: string
           objetivos?: Json | null
@@ -104,7 +145,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_expired_locks: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

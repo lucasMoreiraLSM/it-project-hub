@@ -1,18 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Project, ProximaEtapa, EtapaExecutada } from '@/types/project';
 import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getFarolStatus, getDiasNaEtapa, getStatusCronograma, getStatusCronogramaStyle } from '@/utils/projectCalculations';
-import { ArrowLeft, Plus, X, Check } from 'lucide-react';
+import { useProjectLock } from '@/hooks/useProjectLock';
+import { ArrowLeft, Plus, X, Check, Lock, Clock } from 'lucide-react';
+
 interface ProjectDetailProps {
   project: Project;
   onBack: () => void;
   onUpdate: (project: Project) => void;
 }
+
 export const ProjectDetail: React.FC<ProjectDetailProps> = ({
   project,
   onBack,
@@ -21,13 +25,49 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
   const [editedProject, setEditedProject] = useState<Project>({
     ...project
   });
+  const [canEdit, setCanEdit] = useState(false);
+  
+  const { isLocked, lockInfo, isOwnLock, acquireLock, releaseLock } = useProjectLock(project.id);
+
+  useEffect(() => {
+    const tryAcquireLock = async () => {
+      if (!isLocked) {
+        const acquired = await acquireLock();
+        setCanEdit(acquired);
+      } else if (isOwnLock) {
+        setCanEdit(true);
+      } else {
+        setCanEdit(false);
+      }
+    };
+
+    tryAcquireLock();
+  }, [isLocked, isOwnLock, acquireLock]);
+
   const percentualPrevisto = calculatePercentualPrevisto(editedProject.cronograma);
   const percentualRealizado = calculatePercentualRealizado(editedProject.cronograma);
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
   const farol = getFarolStatus(desvio);
-  const handleSave = () => {
-    onUpdate(editedProject);
+
+  const handleSave = async () => {
+    if (!canEdit) return;
+    await onUpdate(editedProject);
+    await releaseLock();
+    onBack();
   };
+
+  const handleBack = async () => {
+    if (canEdit) {
+      await releaseLock();
+    }
+    onBack();
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleString('pt-BR');
+  };
+
   const addToList = (field: keyof Project, newItem: any) => {
     const currentList = editedProject[field] as any[];
     setEditedProject({
@@ -35,6 +75,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       [field]: [...currentList, newItem]
     });
   };
+
   const removeFromList = (field: keyof Project, index: number) => {
     const currentList = editedProject[field] as any[];
     setEditedProject({
@@ -42,6 +83,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       [field]: currentList.filter((_, i) => i !== index)
     });
   };
+
   const updateListItem = (field: keyof Project, index: number, value: any) => {
     const currentList = editedProject[field] as any[];
     const updatedList = [...currentList];
@@ -51,6 +93,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       [field]: updatedList
     });
   };
+
   const concluirEtapa = (index: number) => {
     const proximaEtapa = editedProject.proximasEtapas[index];
     const novaEtapaExecutada: EtapaExecutada = {
@@ -69,6 +112,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       etapasExecutadas: novasEtapasExecutadas
     });
   };
+
   const getFarolColor = (status: string) => {
     switch (status) {
       case 'Verde':
@@ -81,18 +125,89 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
         return 'bg-gray-500';
     }
   };
-  return <div className="min-h-screen bg-gray-50 p-6">
+
+  if (isLocked && !isOwnLock) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Voltar
+            </Button>
+            <h1 className="text-3xl font-bold text-gray-900">Projeto Bloqueado para Edição</h1>
+          </div>
+
+          <Alert>
+            <Lock className="h-4 w-4" />
+            <AlertDescription>
+              Este projeto está sendo editado por <strong>{lockInfo?.user_name}</strong> desde {formatDate(lockInfo?.locked_at)}.
+              <br />
+              O bloqueio expira em {formatDate(lockInfo?.expires_at)}.
+            </AlertDescription>
+          </Alert>
+
+          <div className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>📌 Visualização do Projeto (Somente Leitura)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Nome do Projeto</Label>
+                    <Input value={project.nome} disabled />
+                  </div>
+                  <div>
+                    <Label>Área de Negócio</Label>
+                    <Input value={project.areaNegocio} disabled />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleBack} className="flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />
             Voltar
           </Button>
           <h1 className="text-3xl font-bold text-gray-900">Detalhes do Projeto</h1>
-          <Button onClick={handleSave} className="ml-auto">
-            Salvar Alterações
-          </Button>
+          
+          <div className="flex items-center gap-4 ml-auto">
+            {project.lastUpdatedByName && (
+              <div className="text-sm text-gray-600 flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                <span>
+                  Última atualização: <strong>{project.lastUpdatedByName}</strong>
+                  <br />
+                  {formatDate(project.lastUpdatedAt)}
+                </span>
+              </div>
+            )}
+            
+            <Button onClick={handleSave} disabled={!canEdit} className="flex items-center gap-2">
+              {canEdit ? 'Salvar Alterações' : 'Projeto Bloqueado'}
+              {!canEdit && <Lock className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
+
+        {canEdit && (
+          <Alert className="mb-6">
+            <Lock className="h-4 w-4" />
+            <AlertDescription>
+              Você está editando este projeto. O bloqueio será renovado automaticamente enquanto você estiver ativo.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <div className="space-y-6">
           {/* Dados do Projeto */}
@@ -104,24 +219,38 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="nome">Nome do Projeto</Label>
-                  <Input id="nome" value={editedProject.nome} onChange={e => setEditedProject({
-                  ...editedProject,
-                  nome: e.target.value
-                })} />
+                  <Input 
+                    id="nome" 
+                    value={editedProject.nome} 
+                    onChange={e => setEditedProject({
+                      ...editedProject,
+                      nome: e.target.value
+                    })}
+                    disabled={!canEdit}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="areaNegocio">Área de Negócio</Label>
-                  <Input id="areaNegocio" value={editedProject.areaNegocio} onChange={e => setEditedProject({
-                  ...editedProject,
-                  areaNegocio: e.target.value
-                })} />
+                  <Input 
+                    id="areaNegocio" 
+                    value={editedProject.areaNegocio} 
+                    onChange={e => setEditedProject({
+                      ...editedProject,
+                      areaNegocio: e.target.value
+                    })}
+                    disabled={!canEdit}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="inovacaoMelhoria">Tipo de Projeto</Label>
-                  <Select value={editedProject.inovacaoMelhoria} onValueChange={(value: 'Inovação' | 'Melhoria') => setEditedProject({
-                  ...editedProject,
-                  inovacaoMelhoria: value
-                })}>
+                  <Select 
+                    value={editedProject.inovacaoMelhoria} 
+                    onValueChange={(value: 'Inovação' | 'Melhoria') => setEditedProject({
+                      ...editedProject,
+                      inovacaoMelhoria: value
+                    })}
+                    disabled={!canEdit}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -133,10 +262,14 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                 </div>
                 <div>
                   <Label htmlFor="estrategicoTatico">Classificação do Projeto</Label>
-                  <Select value={editedProject.estrategicoTatico} onValueChange={(value: 'Estratégico' | 'Tático') => setEditedProject({
-                  ...editedProject,
-                  estrategicoTatico: value
-                })}>
+                  <Select 
+                    value={editedProject.estrategicoTatico} 
+                    onValueChange={(value: 'Estratégico' | 'Tático') => setEditedProject({
+                      ...editedProject,
+                      estrategicoTatico: value
+                    })}
+                    disabled={!canEdit}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -148,10 +281,16 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                 </div>
                 <div className="md:col-span-2">
                   <Label htmlFor="timeTI">Time Responsável</Label>
-                  <Input id="timeTI" value={editedProject.timeTI} onChange={e => setEditedProject({
-                  ...editedProject,
-                  timeTI: e.target.value
-                })} placeholder="Projetos, Infraestrutura, Segurança, Sustentação" />
+                  <Input 
+                    id="timeTI" 
+                    value={editedProject.timeTI} 
+                    onChange={e => setEditedProject({
+                      ...editedProject,
+                      timeTI: e.target.value
+                    })}
+                    placeholder="Projetos, Infraestrutura, Segurança, Sustentação"
+                    disabled={!canEdit}
+                  />
                 </div>
               </div>
               
@@ -494,5 +633,6 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
 
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };

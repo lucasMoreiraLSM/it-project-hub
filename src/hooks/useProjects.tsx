@@ -3,11 +3,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Project, EtapaExecutada } from '@/types/project';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const fetchProjects = async () => {
     try {
@@ -40,7 +42,9 @@ export const useProjects = () => {
         proximasEtapas: Array.isArray(projeto.proximas_etapas) ? projeto.proximas_etapas as any[] : [],
         cronograma: Array.isArray(projeto.cronograma) ? projeto.cronograma as any[] : [],
         pontosAtencao: Array.isArray(projeto.pontos_atencao) ? projeto.pontos_atencao as string[] : [],
-        estrategicoTatico: projeto.estrategico_tatico as 'Estratégico' | 'Tático'
+        estrategicoTatico: projeto.estrategico_tatico as 'Estratégico' | 'Tático',
+        lastUpdatedByName: projeto.last_updated_by_name || '',
+        lastUpdatedAt: projeto.last_updated_at || projeto.updated_at
       }));
 
       setProjects(formattedProjects);
@@ -58,8 +62,8 @@ export const useProjects = () => {
 
   const createProject = async (project: Omit<Project, 'id'>) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) throw new Error('Usuário não autenticado');
 
       const { data, error } = await supabase
         .from('projetos')
@@ -79,7 +83,9 @@ export const useProjects = () => {
           cronograma: project.cronograma as any,
           pontos_atencao: project.pontosAtencao as any,
           estrategico_tatico: project.estrategicoTatico,
-          user_id: user.id
+          user_id: currentUser.id,
+          last_updated_by_name: currentUser.email || 'Usuário Desconhecido',
+          last_updated_at: new Date().toISOString()
         })
         .select()
         .single();
@@ -119,7 +125,9 @@ export const useProjects = () => {
           cronograma: project.cronograma as any,
           pontos_atencao: project.pontosAtencao as any,
           estrategico_tatico: project.estrategicoTatico,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          last_updated_by_name: user?.email || 'Usuário Desconhecido',
+          last_updated_at: new Date().toISOString()
         })
         .eq('id', project.id);
 

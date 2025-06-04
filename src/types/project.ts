@@ -35,4 +35,6 @@ export interface Project {
   cronograma: CronogramaItem[];
   pontosAtencao: string[];
   estrategicoTatico: 'Estratégico' | 'Tático';
+  lastUpdatedByName?: string;
+  lastUpdatedAt?: string;
 }
