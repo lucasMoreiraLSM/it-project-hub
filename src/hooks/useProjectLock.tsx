@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,6 +21,7 @@ export const useProjectLock = (projectId: string) => {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const hasCheckedInitial = useRef(false);
 
   const checkLock = useCallback(async () => {
     if (!projectId) return;
@@ -50,18 +51,29 @@ export const useProjectLock = (projectId: string) => {
         if (locks.user_id === user?.id) {
           setLockId(locks.id);
         }
+        
+        // Se for a primeira verificação e o projeto estiver bloqueado por outro usuário
+        if (!hasCheckedInitial.current && locks.user_id !== user?.id) {
+          toast({
+            title: "Projeto em edição",
+            description: `Este projeto está sendo editado por ${locks.user_name}`,
+            variant: "destructive",
+          });
+        }
       } else {
         setIsLocked(false);
         setLockInfo(null);
         setIsOwnLock(false);
         setLockId(null);
       }
+      
+      hasCheckedInitial.current = true;
     } catch (error) {
       console.error('Erro ao verificar bloqueio:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, user?.id]);
+  }, [projectId, user?.id, toast]);
 
   const acquireLock = useCallback(async (): Promise<boolean> => {
     if (!user || !projectId) return false;
@@ -102,8 +114,8 @@ export const useProjectLock = (projectId: string) => {
       setLockInfo(data);
       
       toast({
-        title: "Projeto bloqueado",
-        description: "Você agora tem controle exclusivo para editar este projeto.",
+        title: "Modo de edição ativo",
+        description: "Você agora pode editar este projeto.",
       });
       
       return true;
@@ -121,7 +133,7 @@ export const useProjectLock = (projectId: string) => {
   }, [user, projectId, checkLock, toast]);
 
   const releaseLock = useCallback(async (showToast: boolean = true) => {
-    if (!lockId) return;
+    if (!lockId) return true;
 
     try {
       setIsLoading(true);
@@ -140,12 +152,13 @@ export const useProjectLock = (projectId: string) => {
       
       if (showToast) {
         toast({
-          title: "Projeto desbloqueado",
+          title: "Edição finalizada",
           description: "O projeto foi liberado para edição por outros usuários.",
         });
       }
       
       console.log('Bloqueio liberado com sucesso');
+      return true;
     } catch (error) {
       console.error('Erro ao liberar bloqueio:', error);
       if (showToast) {
@@ -155,6 +168,7 @@ export const useProjectLock = (projectId: string) => {
           variant: "destructive",
         });
       }
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -180,8 +194,8 @@ export const useProjectLock = (projectId: string) => {
       setLockId(null);
       
       toast({
-        title: "Bloqueio removido",
-        description: "Você removeu seu próprio bloqueio do projeto.",
+        title: "Edição finalizada",
+        description: "Você parou de editar o projeto.",
       });
       
       return true;
@@ -215,12 +229,12 @@ export const useProjectLock = (projectId: string) => {
     }
   }, [lockId]);
 
-  // Verificar bloqueio com menos frequência para melhorar performance
+  // Verificar bloqueio imediatamente ao abrir o projeto
   useEffect(() => {
     if (!projectId) return;
 
     checkLock();
-    const interval = setInterval(checkLock, 45000); // Verificar a cada 45 segundos
+    const interval = setInterval(checkLock, 30000); // Verificar a cada 30 segundos
 
     return () => clearInterval(interval);
   }, [checkLock, projectId]);
@@ -234,36 +248,48 @@ export const useProjectLock = (projectId: string) => {
     return () => clearInterval(interval);
   }, [isOwnLock, lockId, renewLock]);
 
-  // Liberar bloqueio quando sair da página ou recarregar
+  // Liberar bloqueio quando sair da página ou recarregar - SEMPRE
   useEffect(() => {
     const handleBeforeUnload = async (event: BeforeUnloadEvent) => {
       if (lockId) {
         // Para beforeunload, usar sendBeacon para garantir que a requisição seja enviada
-        const deletePayload = {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZHJrZnd5bW1nc3NsdWhha3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4NDgwOTYsImV4cCI6MjA2MTQyNDA5Nn0.Hez1eKgXjBTQvY7qi3WxN5ZZDiGAdvTKathEeO0ZCb8'
-          },
-          body: JSON.stringify({})
-        };
+        const apikey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZHJrZnd5bW1nc3NsdWhha3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4NDgwOTYsImV4cCI6MjA2MTQyNDA5Nn0.Hez1eKgXjBTQvY7qi3WxN5ZZDiGAdvTKathEeO0ZCb8';
+        
+        const formData = new FormData();
+        formData.append('', JSON.stringify({}));
         
         navigator.sendBeacon(
           `https://skdrkfwymmgssluhakwl.supabase.co/rest/v1/project_locks?id=eq.${lockId}`,
-          JSON.stringify(deletePayload)
+          JSON.stringify({
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': apikey,
+              'Authorization': `Bearer ${apikey}`
+            }
+          })
         );
       }
     };
 
-    // Adicionar listener para beforeunload
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && lockId) {
+        // Página ficou oculta, liberar bloqueio
+        releaseLock(false);
+      }
+    };
+
+    // Adicionar listeners
     window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Cleanup quando o componente for desmontado
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
       // Liberar bloqueio de forma assíncrona quando o componente for desmontado
       if (lockId) {
-        releaseLock(false); // Não mostrar toast ao desmontar
+        releaseLock(false);
       }
     };
   }, [lockId, releaseLock]);

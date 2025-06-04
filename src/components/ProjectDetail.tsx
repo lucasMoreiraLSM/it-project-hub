@@ -38,19 +38,26 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
     forceUnlock 
   } = useProjectLock(project.id);
 
+  // Verificar bloqueio e tentar adquirir quando o projeto for aberto
   useEffect(() => {
-    const tryAcquireLock = async () => {
+    const initializeProject = async () => {
+      // Aguardar um pouco para o hook verificar o bloqueio atual
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       if (!isLocked) {
+        // Se não estiver bloqueado, tentar adquirir bloqueio
         const acquired = await acquireLock();
         setCanEdit(acquired);
       } else if (isOwnLock) {
+        // Se for nosso bloqueio, podemos editar
         setCanEdit(true);
       } else {
+        // Se estiver bloqueado por outro usuário, não podemos editar
         setCanEdit(false);
       }
     };
 
-    tryAcquireLock();
+    initializeProject();
   }, [isLocked, isOwnLock, acquireLock]);
 
   const handleSave = async () => {

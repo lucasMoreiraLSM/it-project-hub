@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Lock, Clock, Unlock } from 'lucide-react';
+import { ArrowLeft, Lock, Clock, Edit } from 'lucide-react';
+
 interface ProjectDetailHeaderProps {
   canEdit: boolean;
   isOwnLock: boolean;
@@ -12,10 +14,12 @@ interface ProjectDetailHeaderProps {
   lastUpdatedByName?: string;
   lastUpdatedAt?: string;
 }
+
 const formatDate = (dateString?: string) => {
   if (!dateString) return 'N/A';
   return new Date(dateString).toLocaleString('pt-BR');
 };
+
 export const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
   canEdit,
   isOwnLock,
@@ -44,9 +48,9 @@ export const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
               </span>
             </div>}
           
-          {isOwnLock && onUnlock && <Button variant="outline" onClick={onUnlock} disabled={isLoading} className="flex items-center gap-2 text-[#a43600] px-0 py-0 my-0">
-              <Unlock className="h-4 w-4" />
-              Desbloquear Projeto
+          {isOwnLock && onUnlock && <Button variant="outline" onClick={onUnlock} disabled={isLoading} className="flex items-center gap-2 text-[#a43600] hover:text-[#a43600] border-[#a43600] hover:border-[#a43600]">
+              <Edit className="h-4 w-4" />
+              Editar
             </Button>}
           
           <Button onClick={onSave} disabled={!canEdit || isLoading} className="flex items-center gap-2">
@@ -60,7 +64,7 @@ export const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
           <Lock className="h-4 w-4" />
           <AlertDescription>
             Você está editando este projeto. O bloqueio será renovado automaticamente enquanto você estiver ativo.
-            {isOwnLock && " Você pode desbloquear o projeto a qualquer momento usando o botão 'Desbloquear Projeto'."}
+            {isOwnLock && " Você pode parar de editar o projeto a qualquer momento usando o botão 'Editar'."}
           </AlertDescription>
         </Alert>}
     </>;
