@@ -133,7 +133,7 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({ project, onBack })
                   </thead>
                   <tbody>
                     {project.cronograma.map((item, index) => {
-                      const diasNaEtapa = getDiasNaEtapa(item.inicio);
+                      const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
                       const status = getStatusCronograma(item);
 
                       return (

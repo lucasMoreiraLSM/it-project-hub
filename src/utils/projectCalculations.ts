@@ -1,4 +1,3 @@
-
 import { Project, CronogramaItem } from '@/types/project';
 
 export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
@@ -15,7 +14,7 @@ export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): numbe
     const inicio = new Date(item.inicio);
     const fim = new Date(item.fim);
     const dias = Math.ceil((fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
-    const diasNaEtapa = getDiasNaEtapa(item.inicio);
+    const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
     const diasParaCalcular = Math.min(diasNaEtapa, dias);
     return total + diasParaCalcular;
   }, 0);
@@ -73,8 +72,17 @@ export const getStatusOrcamentoColor = (status: string): string => {
   }
 };
 
-export const getDiasNaEtapa = (dataInicio: string): number => {
+export const getDiasNaEtapa = (dataInicio: string, dataFim?: string, percentualRealizado?: number): number => {
   const inicio = new Date(dataInicio);
+  
+  // Se percentual realizado é 100%, calcular entre início e fim
+  if (percentualRealizado === 100 && dataFim) {
+    const fim = new Date(dataFim);
+    const diffTime = fim.getTime() - inicio.getTime();
+    return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+  }
+  
+  // Se percentual realizado é menor que 100%, calcular entre início e data atual
   const hoje = new Date();
   const diffTime = hoje.getTime() - inicio.getTime();
   return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
