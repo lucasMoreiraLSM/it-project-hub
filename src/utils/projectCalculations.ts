@@ -90,11 +90,11 @@ export const getStatusCronograma = (item: CronogramaItem): string => {
   // Não iniciado: % Previsto igual a 0 e % Realizado menor ou igual a 0
   if (item.percentualPrevisto === 0 && item.percentualRealizado <= 0) return 'Não Iniciado';
   
-  // Atrasado: Quando a "data fim" é menor que a "data atual" e % realizado é menor que 100
+  // Atrasado: Quando a "data fim" é maior que a "data atual" e % realizado é menor que 100
   if (fimPrevisto < hoje && item.percentualRealizado < 100) return 'Atrasado';
   
-  // Em andamento: % Previsto maior que 0 e % Realizado maior que 0
-  if (item.percentualPrevisto > 0 && item.percentualRealizado > 0) return 'Em Andamento';
+  // Em andamento: % Realizado > 0 e % Previsto < 100
+  if (item.percentualRealizado > 0 && item.percentualPrevisto < 100) return 'Em Andamento';
   
   return 'Não Iniciado';
 };
