@@ -32,19 +32,19 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[200px] min-w-[150px]">Projeto</TableHead>
-                <TableHead className="w-[80px] text-center">% Prev.</TableHead>
-                <TableHead className="w-[80px] text-center">% Real.</TableHead>
-                <TableHead className="w-[80px] text-center">% Desv.</TableHead>
+                <TableHead className="w-[80px] text-center">% Previsto</TableHead>
+                <TableHead className="w-[80px] text-center">% Realizado</TableHead>
+                <TableHead className="w-[80px] text-center">% Desvio</TableHead>
                 <TableHead className="w-[60px] text-center">Status</TableHead>
                 <TableHead className="w-[100px] text-center">Data Fim</TableHead>
                 <TableHead className="w-[90px] text-center">Status Geral</TableHead>
                 <TableHead className="w-[120px] px-[25px]">Áreas</TableHead>
                 <TableHead className="w-[100px]">Time TI</TableHead>
                 <TableHead className="w-[120px]">Líder TI</TableHead>
-                <TableHead className="w-[120px]">Gerente Projetos.</TableHead>
+                <TableHead className="w-[120px]">Gerente Projetos</TableHead>
                 <TableHead className="w-[90px] text-center">Inov/Melh</TableHead>
                 <TableHead className="w-[90px] text-center">Status Geral</TableHead>
-                <TableHead className="w-[90px] text-center">Classificaçãot</TableHead>
+                <TableHead className="w-[90px] text-center">Classificação</TableHead>
                 <TableHead className="w-[120px] text-center">Ações</TableHead>
               </TableRow>
             </TableHeader>
