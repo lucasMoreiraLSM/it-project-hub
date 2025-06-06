@@ -1,13 +1,15 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectLock, LockCheckResult } from '@/types/projectLock';
-import { SUPABASE_URL, SUPABASE_KEY } from './lockConstants';
 
 export const cleanupExpiredLocks = async (): Promise<void> => {
   try {
+    console.log('Limpando bloqueios expirados...');
     const { error } = await supabase.rpc('cleanup_expired_locks');
     if (error) {
       console.error('Erro ao limpar bloqueios expirados:', error);
+    } else {
+      console.log('Bloqueios expirados limpos com sucesso');
     }
   } catch (error) {
     console.error('Erro ao limpar bloqueios expirados:', error);
@@ -62,7 +64,7 @@ export const createProjectLock = async (
   }
 
   try {
-    console.log('Criando novo bloqueio para projeto:', projectId, 'usuário:', userId);
+    console.log('Criando novo bloqueio para projeto:', projectId, 'usuário:', userId, 'email:', userEmail);
     
     // Primeiro, limpar bloqueios expirados
     await cleanupExpiredLocks();
@@ -82,27 +84,35 @@ export const createProjectLock = async (
       }
     }
 
+    // Criar novo bloqueio
+    const lockData = {
+      project_id: projectId,
+      user_id: userId,
+      user_name: userEmail || 'Usuário Desconhecido',
+      locked_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutos
+    };
+
+    console.log('Dados do bloqueio a serem inseridos:', lockData);
+
     const { data, error } = await supabase
       .from('project_locks')
-      .insert({
-        project_id: projectId,
-        user_id: userId,
-        user_name: userEmail || 'Usuário Desconhecido',
-        locked_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutos
-      })
+      .insert(lockData)
       .select()
       .single();
 
     if (error) {
-      console.error('Erro ao criar bloqueio:', error);
-      return { success: false, error: error.message };
+      console.error('Erro detalhado ao criar bloqueio:', error);
+      console.error('Código do erro:', error.code);
+      console.error('Mensagem do erro:', error.message);
+      console.error('Detalhes do erro:', error.details);
+      return { success: false, error: `Erro ao criar bloqueio: ${error.message}` };
     }
 
     console.log('Bloqueio criado com sucesso:', data);
     return { success: true, lock: data };
   } catch (error) {
-    console.error('Erro ao criar bloqueio:', error);
+    console.error('Erro exception ao criar bloqueio:', error);
     return { success: false, error: 'Erro desconhecido ao criar bloqueio' };
   }
 };
@@ -171,6 +181,9 @@ export const releaseLockOnPageUnload = (lockId: string): void => {
   }
   
   try {
+    const SUPABASE_URL = "https://skdrkfwymmgssluhakwl.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZHJrZnd5bW1nc3NsdWhha3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4NDgwOTYsImV4cCI6MjA2MTQyNDA5Nn0.Hez1eKgXjBTQvY7qi3WxN5ZZDiGAdvTKathEeO0ZCb8";
+    
     fetch(`${SUPABASE_URL}/rest/v1/project_locks?id=eq.${lockId}`, {
       method: 'DELETE',
       headers: {
