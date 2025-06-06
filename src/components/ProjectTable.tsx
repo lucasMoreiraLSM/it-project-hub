@@ -32,9 +32,9 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[200px] min-w-[150px]">Projeto</TableHead>
-                <TableHead className="w-[80px] text-center">% Previsto</TableHead>
-                <TableHead className="w-[80px] text-center">% Realizado</TableHead>
-                <TableHead className="w-[80px] text-center">% Desvio</TableHead>
+                <TableHead className="w-[80px] text-center">% Prev.</TableHead>
+                <TableHead className="w-[80px] text-center">% Real.</TableHead>
+                <TableHead className="w-[80px] text-center">% Desv.</TableHead>
                 <TableHead className="w-[60px] text-center">Status</TableHead>
                 <TableHead className="w-[100px] text-center">Data Fim</TableHead>
                 <TableHead className="w-[90px] text-center">Status Geral</TableHead>
