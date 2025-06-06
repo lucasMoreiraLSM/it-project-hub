@@ -22,6 +22,11 @@ export const useProjectLock = (projectId: string) => {
   const { toast } = useToast();
 
   const checkLock = useCallback(async () => {
+    if (!projectId) {
+      console.log('Project ID não fornecido para verificação');
+      return { hasLock: false, lockInfo: null };
+    }
+
     const result = await checkProjectLock(projectId);
     
     if (result.hasLock && result.lockInfo) {
@@ -63,6 +68,10 @@ export const useProjectLock = (projectId: string) => {
         if (lockCheck.lockInfo?.user_id === user.id) {
           // Já é nosso bloqueio
           console.log('Bloqueio já pertence ao usuário atual');
+          toast({
+            title: "Modo de edição ativo",
+            description: "Você já está editando este projeto.",
+          });
           return true;
         } else {
           // Projeto bloqueado por outro usuário
@@ -80,22 +89,10 @@ export const useProjectLock = (projectId: string) => {
       const result = await createProjectLock(projectId, user.id, user.email || 'Usuário Desconhecido');
       
       if (!result.success) {
-        // Se houve erro de violação de chave única, verificar novamente
-        if (result.error?.includes('duplicate') || result.error?.includes('unique')) {
-          const recheckResult = await checkLock();
-          if (recheckResult.hasLock && recheckResult.lockInfo?.user_id !== user.id) {
-            toast({
-              title: "Projeto em edição",
-              description: `Este projeto está sendo editado por ${recheckResult.lockInfo?.user_name}`,
-              variant: "destructive",
-            });
-            return false;
-          }
-        }
-        
+        console.error('Falha ao criar bloqueio:', result.error);
         toast({
           title: "Erro",
-          description: "Não foi possível bloquear o projeto para edição.",
+          description: result.error || "Não foi possível bloquear o projeto para edição.",
           variant: "destructive",
         });
         return false;
@@ -182,12 +179,16 @@ export const useProjectLock = (projectId: string) => {
 
   const renewLock = useCallback(async () => {
     if (!lockId) return;
-    await renewProjectLock(lockId);
+    const success = await renewProjectLock(lockId);
+    if (!success) {
+      console.warn('Falha ao renovar bloqueio');
+    }
   }, [lockId]);
 
   // Verificar bloqueio inicial quando o componente monta
   useEffect(() => {
     if (projectId && user) {
+      console.log('Verificando bloqueio inicial para projeto:', projectId);
       checkLock();
     }
   }, [projectId, user, checkLock]);
@@ -196,14 +197,19 @@ export const useProjectLock = (projectId: string) => {
   useEffect(() => {
     if (!isOwnLock || !lockId) return;
 
+    console.log('Iniciando renovação automática do bloqueio');
     const interval = setInterval(renewLock, LOCK_RENEWAL_INTERVAL);
-    return () => clearInterval(interval);
+    return () => {
+      console.log('Parando renovação automática do bloqueio');
+      clearInterval(interval);
+    };
   }, [isOwnLock, lockId, renewLock]);
 
   // Liberar bloqueio quando sair da página ou recarregar
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (lockId) {
+        console.log('beforeunload: liberando bloqueio');
         releaseLockOnPageUnload(lockId);
       }
     };
@@ -224,6 +230,7 @@ export const useProjectLock = (projectId: string) => {
       
       // Liberar bloqueio ao desmontar o componente
       if (lockId) {
+        console.log('Componente desmontado, liberando bloqueio');
         releaseLock(false);
       }
     };

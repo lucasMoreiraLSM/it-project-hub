@@ -15,7 +15,10 @@ export const cleanupExpiredLocks = async (): Promise<void> => {
 };
 
 export const checkProjectLock = async (projectId: string): Promise<LockCheckResult> => {
-  if (!projectId) return { hasLock: false, lockInfo: null };
+  if (!projectId) {
+    console.log('Project ID não fornecido');
+    return { hasLock: false, lockInfo: null };
+  }
 
   try {
     console.log('Verificando bloqueio existente para projeto:', projectId);
@@ -39,7 +42,7 @@ export const checkProjectLock = async (projectId: string): Promise<LockCheckResu
       console.log('Bloqueio encontrado:', locks);
       return { hasLock: true, lockInfo: locks };
     } else {
-      console.log('Nenhum bloqueio encontrado');
+      console.log('Nenhum bloqueio encontrado para projeto:', projectId);
       return { hasLock: false, lockInfo: null };
     }
   } catch (error) {
@@ -53,14 +56,40 @@ export const createProjectLock = async (
   userId: string, 
   userEmail: string
 ): Promise<{ success: boolean; lock?: ProjectLock; error?: string }> => {
+  if (!projectId || !userId) {
+    console.error('Project ID ou User ID não fornecido');
+    return { success: false, error: 'Project ID ou User ID não fornecido' };
+  }
+
   try {
-    console.log('Criando novo bloqueio...');
+    console.log('Criando novo bloqueio para projeto:', projectId, 'usuário:', userId);
+    
+    // Primeiro, limpar bloqueios expirados
+    await cleanupExpiredLocks();
+    
+    // Verificar se já existe bloqueio ativo para este projeto
+    const existingLock = await checkProjectLock(projectId);
+    if (existingLock.hasLock) {
+      if (existingLock.lockInfo?.user_id === userId) {
+        console.log('Usuário já possui bloqueio ativo');
+        return { success: true, lock: existingLock.lockInfo };
+      } else {
+        console.log('Projeto já bloqueado por outro usuário');
+        return { 
+          success: false, 
+          error: `Projeto bloqueado por ${existingLock.lockInfo?.user_name}` 
+        };
+      }
+    }
+
     const { data, error } = await supabase
       .from('project_locks')
       .insert({
         project_id: projectId,
         user_id: userId,
-        user_name: userEmail || 'Usuário Desconhecido'
+        user_name: userEmail || 'Usuário Desconhecido',
+        locked_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutos
       })
       .select()
       .single();
@@ -74,11 +103,16 @@ export const createProjectLock = async (
     return { success: true, lock: data };
   } catch (error) {
     console.error('Erro ao criar bloqueio:', error);
-    return { success: false, error: 'Erro desconhecido' };
+    return { success: false, error: 'Erro desconhecido ao criar bloqueio' };
   }
 };
 
 export const deleteProjectLock = async (lockId: string): Promise<boolean> => {
+  if (!lockId) {
+    console.log('Lock ID não fornecido');
+    return false;
+  }
+
   try {
     console.log('Liberando bloqueio:', lockId);
     
@@ -101,6 +135,11 @@ export const deleteProjectLock = async (lockId: string): Promise<boolean> => {
 };
 
 export const renewProjectLock = async (lockId: string): Promise<boolean> => {
+  if (!lockId) {
+    console.log('Lock ID não fornecido para renovação');
+    return false;
+  }
+
   try {
     console.log('Renovando bloqueio:', lockId);
     const { error } = await supabase
@@ -126,6 +165,11 @@ export const renewProjectLock = async (lockId: string): Promise<boolean> => {
 export const releaseLockOnPageUnload = (lockId: string): void => {
   console.log('Página sendo fechada, liberando bloqueio via fetch');
   
+  if (!lockId) {
+    console.log('Lock ID não fornecido para liberação');
+    return;
+  }
+  
   try {
     fetch(`${SUPABASE_URL}/rest/v1/project_locks?id=eq.${lockId}`, {
       method: 'DELETE',
@@ -133,7 +177,8 @@ export const releaseLockOnPageUnload = (lockId: string): void => {
         'apikey': SUPABASE_KEY,
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${SUPABASE_KEY}`
-      }
+      },
+      keepalive: true
     });
   } catch (error) {
     console.error('Erro ao liberar bloqueio no beforeunload:', error);
