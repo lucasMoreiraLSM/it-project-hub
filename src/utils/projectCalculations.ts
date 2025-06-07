@@ -58,7 +58,7 @@ export const calculateParticipacaoEtapaNormalizada = (cronograma: CronogramaItem
   return participacoesArredondadas;
 };
 
-export const calculatePlanejadoEtapa = (item: CronogramaItem, participacao: number): number => {
+export const calculatePlanejadoEtapa = (item: CronogramaItem, participacao: number, totalDias: number): number => {
   const status = getStatusCronograma(item);
   
   switch (status) {
@@ -68,51 +68,25 @@ export const calculatePlanejadoEtapa = (item: CronogramaItem, participacao: numb
     case 'Atrasado':
       return participacao;
     case 'Em Andamento':
-      return participacao;
+      if (totalDias === 0) return 0;
+      const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
+      return (diasNaEtapa / totalDias) * 100;
     default:
       return 0;
   }
 };
 
-// Função para garantir que a soma dos planejados seja exatamente 100%
-export const calculatePlanejadoEtapaNormalizado = (cronograma: CronogramaItem[]): number[] => {
+// Função para calcular % Planejado Etapa sem normalização forçada para 100%
+export const calculatePlanejadoEtapaSemNormalizacao = (cronograma: CronogramaItem[]): number[] => {
   if (cronograma.length === 0) return [];
   
   const participacoesNormalizadas = calculateParticipacaoEtapaNormalizada(cronograma);
+  const totalDias = calculateTotalDias(cronograma);
   
-  // Calcular planejados brutos
-  const planejadosBrutos = cronograma.map((item, index) => {
-    return calculatePlanejadoEtapa(item, participacoesNormalizadas[index]);
+  // Calcular planejados seguindo a lógica correta
+  return cronograma.map((item, index) => {
+    return calculatePlanejadoEtapa(item, participacoesNormalizadas[index], totalDias);
   });
-  
-  // Arredondar para números inteiros
-  const planejadosArredondados = planejadosBrutos.map(p => Math.round(p));
-  
-  // Calcular diferença para 100%
-  const somaAtual = planejadosArredondados.reduce((sum, p) => sum + p, 0);
-  const diferenca = 100 - somaAtual;
-  
-  // Distribuir a diferença nos itens com maior resto decimal
-  if (diferenca !== 0) {
-    const restos = planejadosBrutos.map((bruto, index) => ({
-      index,
-      resto: bruto - planejadosArredondados[index]
-    }));
-    
-    // Ordenar por resto decrescente
-    restos.sort((a, b) => Math.abs(b.resto) - Math.abs(a.resto));
-    
-    // Ajustar os valores para que a soma seja 100%
-    for (let i = 0; i < Math.abs(diferenca) && i < restos.length; i++) {
-      if (diferenca > 0) {
-        planejadosArredondados[restos[i].index] += 1;
-      } else {
-        planejadosArredondados[restos[i].index] -= 1;
-      }
-    }
-  }
-  
-  return planejadosArredondados;
 };
 
 export const calculateRealizadoEtapa = (percentualRealizado: number, participacao: number): number => {
@@ -122,9 +96,12 @@ export const calculateRealizadoEtapa = (percentualRealizado: number, participaca
 export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0;
   
-  // Somatória do campo "% Planejado Etapa" normalizado
-  const planejadosNormalizados = calculatePlanejadoEtapaNormalizado(cronograma);
-  return planejadosNormalizados.reduce((total, planejado) => total + planejado, 0);
+  // Somatória do campo "% Planejado Etapa" sem normalização forçada
+  const planejados = calculatePlanejadoEtapaSemNormalizacao(cronograma);
+  const total = planejados.reduce((total, planejado) => total + planejado, 0);
+  
+  // Garantir que não ultrapasse 100%
+  return Math.min(100, Math.round(total));
 };
 
 export const calculatePercentualRealizado = (cronograma: CronogramaItem[]): number => {
