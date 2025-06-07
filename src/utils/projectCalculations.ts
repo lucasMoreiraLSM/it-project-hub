@@ -1,4 +1,3 @@
-
 import { Project, CronogramaItem } from '@/types/project';
 
 export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
@@ -35,9 +34,11 @@ export const calculateDesvio = (previsto: number, realizado: number): number => 
 };
 
 export const getFarolStatus = (desvio: number): 'Verde' | 'Amarelo' | 'Vermelho' => {
-  const desvioAbs = Math.abs(desvio);
-  if (desvioAbs < 5) return 'Verde';
-  if (desvioAbs <= 10) return 'Amarelo';
+  // Verde quando o % Desvio < 0% ou < 5%
+  if (desvio < 0 || desvio < 5) return 'Verde';
+  // Amarelo quando % Desvio > 5% e < 10%
+  if (desvio > 5 && desvio < 10) return 'Amarelo';
+  // Vermelho quando % Desvio > 10%
   return 'Vermelho';
 };
 
