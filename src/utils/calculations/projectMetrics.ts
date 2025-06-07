@@ -19,10 +19,12 @@ export const calculatePercentualRealizado = (cronograma: CronogramaItem[]): numb
   
   // Somatória do campo "% Realizado Etapa"
   const participacoesNormalizadas = calculateParticipacaoEtapaNormalizada(cronograma);
-  return cronograma.reduce((total, item, index) => {
+  const total = cronograma.reduce((total, item, index) => {
     const realizado = calculateRealizadoEtapa(item.percentualRealizado, participacoesNormalizadas[index]);
     return total + realizado;
   }, 0);
+  
+  return Math.round(total);
 };
 
 export const calculateDesvio = (previsto: number, realizado: number): number => {
