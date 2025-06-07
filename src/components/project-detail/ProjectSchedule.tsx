@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import { ListSectionProps } from './types';
-import { getDiasNaEtapa, getStatusCronograma, getStatusCronogramaStyle, calculateParticipacaoEtapa, calculatePlanejadoEtapa, calculateRealizadoEtapa } from '@/utils/projectCalculations';
+import { getDiasNaEtapa, getStatusCronograma, getStatusCronogramaStyle } from '@/utils/projectCalculations';
 
 export const ProjectSchedule: React.FC<ListSectionProps> = ({
   project,
@@ -51,9 +51,6 @@ export const ProjectSchedule: React.FC<ListSectionProps> = ({
                 <th className="border border-gray-200 p-2 text-left">% Previsto</th>
                 <th className="border border-gray-200 p-2 text-left">% Realizado</th>
                 <th className="border border-gray-200 p-2 text-left">Dias na Etapa</th>
-                <th className="border border-gray-200 p-2 text-left">% Participação</th>
-                <th className="border border-gray-200 p-2 text-left">% Planejado Etapa</th>
-                <th className="border border-gray-200 p-2 text-left">% Realizado Etapa</th>
                 <th className="border border-gray-200 p-2 text-left">Dia Atual</th>
                 <th className="border border-gray-200 p-2 text-left">Ações</th>
               </tr>
@@ -62,9 +59,6 @@ export const ProjectSchedule: React.FC<ListSectionProps> = ({
               {project.cronograma.map((item, index) => {
                 const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
                 const status = getStatusCronograma(item);
-                const participacao = calculateParticipacaoEtapa(project.cronograma, index);
-                const planejado = calculatePlanejadoEtapa(item, participacao);
-                const realizado = calculateRealizadoEtapa(item.percentualRealizado, participacao);
                 
                 return (
                   <tr key={index}>
@@ -134,9 +128,6 @@ export const ProjectSchedule: React.FC<ListSectionProps> = ({
                       />
                     </td>
                     <td className="border border-gray-200 p-2 text-center">{diasNaEtapa}</td>
-                    <td className="border border-gray-200 p-2 text-center">{participacao}%</td>
-                    <td className="border border-gray-200 p-2 text-center">{planejado}%</td>
-                    <td className="border border-gray-200 p-2 text-center">{realizado}%</td>
                     <td className="border border-gray-200 p-2 text-center">{hoje}</td>
                     <td className="border border-gray-200 p-2">
                       {canEdit && (

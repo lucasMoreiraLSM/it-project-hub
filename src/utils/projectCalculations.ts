@@ -12,7 +12,50 @@ export const calculateParticipacaoEtapa = (cronograma: CronogramaItem[], index: 
   if (totalDias === 0) return 0;
   
   const diasNaEtapa = getDiasNaEtapa(cronograma[index].inicio, cronograma[index].fim, cronograma[index].percentualRealizado);
-  return Math.round((diasNaEtapa / totalDias) * 100);
+  return (diasNaEtapa / totalDias) * 100;
+};
+
+// Função para garantir que a soma das participações seja exatamente 100%
+export const calculateParticipacaoEtapaNormalizada = (cronograma: CronogramaItem[]): number[] => {
+  if (cronograma.length === 0) return [];
+  
+  const totalDias = calculateTotalDias(cronograma);
+  if (totalDias === 0) return cronograma.map(() => 0);
+  
+  // Calcular participações brutas
+  const participacoesBrutas = cronograma.map((item) => {
+    const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
+    return (diasNaEtapa / totalDias) * 100;
+  });
+  
+  // Arredondar para números inteiros
+  const participacoesArredondadas = participacoesBrutas.map(p => Math.round(p));
+  
+  // Calcular diferença para 100%
+  const somaAtual = participacoesArredondadas.reduce((sum, p) => sum + p, 0);
+  const diferenca = 100 - somaAtual;
+  
+  // Distribuir a diferença nos itens com maior resto decimal
+  if (diferenca !== 0) {
+    const restos = participacoesBrutas.map((bruta, index) => ({
+      index,
+      resto: bruta - participacoesArredondadas[index]
+    }));
+    
+    // Ordenar por resto decrescente
+    restos.sort((a, b) => Math.abs(b.resto) - Math.abs(a.resto));
+    
+    // Ajustar os valores para que a soma seja 100%
+    for (let i = 0; i < Math.abs(diferenca) && i < restos.length; i++) {
+      if (diferenca > 0) {
+        participacoesArredondadas[restos[i].index] += 1;
+      } else {
+        participacoesArredondadas[restos[i].index] -= 1;
+      }
+    }
+  }
+  
+  return participacoesArredondadas;
 };
 
 export const calculatePlanejadoEtapa = (item: CronogramaItem, participacao: number): number => {
@@ -25,10 +68,51 @@ export const calculatePlanejadoEtapa = (item: CronogramaItem, participacao: numb
     case 'Atrasado':
       return participacao;
     case 'Em Andamento':
-      return participacao; // Como está em andamento, usa a participação atual
+      return participacao;
     default:
       return 0;
   }
+};
+
+// Função para garantir que a soma dos planejados seja exatamente 100%
+export const calculatePlanejadoEtapaNormalizado = (cronograma: CronogramaItem[]): number[] => {
+  if (cronograma.length === 0) return [];
+  
+  const participacoesNormalizadas = calculateParticipacaoEtapaNormalizada(cronograma);
+  
+  // Calcular planejados brutos
+  const planejadosBrutos = cronograma.map((item, index) => {
+    return calculatePlanejadoEtapa(item, participacoesNormalizadas[index]);
+  });
+  
+  // Arredondar para números inteiros
+  const planejadosArredondados = planejadosBrutos.map(p => Math.round(p));
+  
+  // Calcular diferença para 100%
+  const somaAtual = planejadosArredondados.reduce((sum, p) => sum + p, 0);
+  const diferenca = 100 - somaAtual;
+  
+  // Distribuir a diferença nos itens com maior resto decimal
+  if (diferenca !== 0) {
+    const restos = planejadosBrutos.map((bruto, index) => ({
+      index,
+      resto: bruto - planejadosArredondados[index]
+    }));
+    
+    // Ordenar por resto decrescente
+    restos.sort((a, b) => Math.abs(b.resto) - Math.abs(a.resto));
+    
+    // Ajustar os valores para que a soma seja 100%
+    for (let i = 0; i < Math.abs(diferenca) && i < restos.length; i++) {
+      if (diferenca > 0) {
+        planejadosArredondados[restos[i].index] += 1;
+      } else {
+        planejadosArredondados[restos[i].index] -= 1;
+      }
+    }
+  }
+  
+  return planejadosArredondados;
 };
 
 export const calculateRealizadoEtapa = (percentualRealizado: number, participacao: number): number => {
@@ -38,21 +122,18 @@ export const calculateRealizadoEtapa = (percentualRealizado: number, participaca
 export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0;
   
-  // Somatória do campo "% Planejado Etapa"
-  return cronograma.reduce((total, item, index) => {
-    const participacao = calculateParticipacaoEtapa(cronograma, index);
-    const planejado = calculatePlanejadoEtapa(item, participacao);
-    return total + planejado;
-  }, 0);
+  // Somatória do campo "% Planejado Etapa" normalizado
+  const planejadosNormalizados = calculatePlanejadoEtapaNormalizado(cronograma);
+  return planejadosNormalizados.reduce((total, planejado) => total + planejado, 0);
 };
 
 export const calculatePercentualRealizado = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0;
   
   // Somatória do campo "% Realizado Etapa"
+  const participacoesNormalizadas = calculateParticipacaoEtapaNormalizada(cronograma);
   return cronograma.reduce((total, item, index) => {
-    const participacao = calculateParticipacaoEtapa(cronograma, index);
-    const realizado = calculateRealizadoEtapa(item.percentualRealizado, participacao);
+    const realizado = calculateRealizadoEtapa(item.percentualRealizado, participacoesNormalizadas[index]);
     return total + realizado;
   }, 0);
 };
