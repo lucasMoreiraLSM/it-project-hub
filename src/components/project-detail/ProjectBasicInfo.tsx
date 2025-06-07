@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectSectionProps } from './types';
-import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getFarolStatus, calculateTotalDias } from '@/utils/projectCalculations';
+import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getFarolStatus } from '@/utils/projectCalculations';
 
 export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
   project,
@@ -15,7 +16,6 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
   const percentualRealizado = calculatePercentualRealizado(project.cronograma);
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
   const farol = getFarolStatus(desvio);
-  const totalDias = calculateTotalDias(project.cronograma);
 
   const getFarolColor = (status: string) => {
     switch (status) {
@@ -99,7 +99,7 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
           </div>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
           <div>
             <Label className="text-sm font-medium">% Previsto Total</Label>
             <div className="text-2xl font-bold text-blue-600">{percentualPrevisto}%</div>
@@ -120,10 +120,6 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
               <div className={`w-4 h-4 rounded-full ${getFarolColor(farol)}`}></div>
               <span className="font-medium">{farol}</span>
             </div>
-          </div>
-          <div>
-            <Label className="text-sm font-medium">Total Dias</Label>
-            <div className="text-2xl font-bold text-purple-600">{totalDias}</div>
           </div>
         </div>
       </CardContent>
