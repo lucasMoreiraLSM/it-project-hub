@@ -1,4 +1,3 @@
-
 import { Project, CronogramaItem } from '@/types/project';
 
 export const calculateTotalDias = (cronograma: CronogramaItem[]): number => {
