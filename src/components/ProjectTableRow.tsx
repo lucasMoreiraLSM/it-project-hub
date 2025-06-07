@@ -1,16 +1,19 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Project } from '@/types/project';
 import { BarChart, Trash2 } from 'lucide-react';
-import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getStatusProjeto, getStatusOrcamento, getStatusOrcamentoColor, getStatusGeral, getDataFimPrevista } from '@/utils/projectCalculations';
+import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getStatusProjeto, getStatusOrcamento, getStatusOrcamentoColor, getStatusGeral, getDataFimPrevista, getFarolStatus } from '@/utils/projectCalculations';
+
 interface ProjectTableRowProps {
   project: Project;
   onSelectProject: (project: Project) => void;
   onShowReport: (project: Project, event: React.MouseEvent) => void;
   onDeleteProject: (projectId: string, event: React.MouseEvent) => void;
 }
+
 export const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
   project,
   onSelectProject,
@@ -20,10 +23,24 @@ export const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
   const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
   const percentualRealizado = calculatePercentualRealizado(project.cronograma);
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
-  const statusProjeto = getStatusProjeto(desvio);
+  const farol = getFarolStatus(desvio);
   const statusOrcamento = getStatusOrcamento(project.cronograma);
   const statusGeral = getStatusGeral(project.cronograma);
   const dataFimPrevista = getDataFimPrevista(project.cronograma);
+
+  const getFarolColor = (status: string) => {
+    switch (status) {
+      case 'Verde':
+        return 'bg-green-500';
+      case 'Amarelo':
+        return 'bg-yellow-500';
+      case 'Vermelho':
+        return 'bg-red-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
+
   return <TableRow className="cursor-pointer hover:bg-muted/50" onClick={() => onSelectProject(project)}>
       <TableCell className="font-medium text-blue-600 hover:text-blue-800 max-w-[200px] truncate">
         <div className="truncate" title={project.nome}>
@@ -33,12 +50,12 @@ export const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
       <TableCell className="text-center text-sm">{percentualPrevisto}%</TableCell>
       <TableCell className="text-center text-sm">{percentualRealizado}%</TableCell>
       <TableCell className="text-center text-sm">
-        <span className={desvio >= 0 ? 'text-green-600' : 'text-red-600'}>
+        <span className={desvio > 0 ? 'text-red-600' : 'text-green-600'}>
           {desvio > 0 ? '+' : ''}{desvio}%
         </span>
       </TableCell>
       <TableCell className="text-center">
-        <div className={`w-3 h-3 rounded-full bg-${statusProjeto}-500 mx-auto`}></div>
+        <div className={`w-3 h-3 rounded-full ${getFarolColor(farol)} mx-auto`}></div>
       </TableCell>
       <TableCell className="text-center text-sm">{dataFimPrevista}</TableCell>
       <TableCell className="text-center text-sm">
