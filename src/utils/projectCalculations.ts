@@ -1,3 +1,4 @@
+
 import { Project, CronogramaItem } from '@/types/project';
 
 export const calculateTotalDias = (cronograma: CronogramaItem[]): number => {
@@ -76,14 +77,13 @@ export const calculatePlanejadoEtapa = (item: CronogramaItem, participacao: numb
   }
 };
 
-// Função para calcular % Planejado Etapa sem normalização forçada para 100%
-export const calculatePlanejadoEtapaSemNormalizacao = (cronograma: CronogramaItem[]): number[] => {
+// Função para calcular % Planejado Etapa
+export const calculatePlanejadoEtapas = (cronograma: CronogramaItem[]): number[] => {
   if (cronograma.length === 0) return [];
   
   const participacoesNormalizadas = calculateParticipacaoEtapaNormalizada(cronograma);
   const totalDias = calculateTotalDias(cronograma);
   
-  // Calcular planejados seguindo a lógica correta
   return cronograma.map((item, index) => {
     return calculatePlanejadoEtapa(item, participacoesNormalizadas[index], totalDias);
   });
@@ -96,8 +96,8 @@ export const calculateRealizadoEtapa = (percentualRealizado: number, participaca
 export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0;
   
-  // Somatória do campo "% Planejado Etapa" sem normalização forçada
-  const planejados = calculatePlanejadoEtapaSemNormalizacao(cronograma);
+  // Somatória do campo "% Planejado Etapa"
+  const planejados = calculatePlanejadoEtapas(cronograma);
   const total = planejados.reduce((total, planejado) => total + planejado, 0);
   
   // Garantir que não ultrapasse 100%
