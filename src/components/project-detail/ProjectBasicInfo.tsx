@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,7 +5,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectSectionProps } from './types';
 import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getFarolStatus } from '@/utils/projectCalculations';
-
 export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
   project,
   onUpdate,
@@ -16,7 +14,6 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
   const percentualRealizado = calculatePercentualRealizado(project.cronograma);
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
   const farol = getFarolStatus(desvio);
-
   const getFarolColor = (status: string) => {
     switch (status) {
       case 'Verde':
@@ -29,9 +26,7 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
         return 'bg-gray-500';
     }
   };
-
-  return (
-    <Card>
+  return <Card>
       <CardHeader>
         <CardTitle>📌 Dados do Projeto</CardTitle>
       </CardHeader>
@@ -39,29 +34,15 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="nome">Nome do Projeto</Label>
-            <Input 
-              id="nome" 
-              value={project.nome} 
-              onChange={e => onUpdate('nome', e.target.value)}
-              disabled={!canEdit}
-            />
+            <Input id="nome" value={project.nome} onChange={e => onUpdate('nome', e.target.value)} disabled={!canEdit} />
           </div>
           <div>
             <Label htmlFor="areaNegocio">Área de Negócio</Label>
-            <Input 
-              id="areaNegocio" 
-              value={project.areaNegocio} 
-              onChange={e => onUpdate('areaNegocio', e.target.value)}
-              disabled={!canEdit}
-            />
+            <Input id="areaNegocio" value={project.areaNegocio} onChange={e => onUpdate('areaNegocio', e.target.value)} disabled={!canEdit} />
           </div>
           <div>
             <Label htmlFor="inovacaoMelhoria">Tipo de Projeto</Label>
-            <Select 
-              value={project.inovacaoMelhoria} 
-              onValueChange={(value: 'Inovação' | 'Melhoria') => onUpdate('inovacaoMelhoria', value)}
-              disabled={!canEdit}
-            >
+            <Select value={project.inovacaoMelhoria} onValueChange={(value: 'Inovação' | 'Melhoria') => onUpdate('inovacaoMelhoria', value)} disabled={!canEdit}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -73,11 +54,7 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
           </div>
           <div>
             <Label htmlFor="estrategicoTatico">Classificação do Projeto</Label>
-            <Select 
-              value={project.estrategicoTatico} 
-              onValueChange={(value: 'Estratégico' | 'Tático') => onUpdate('estrategicoTatico', value)}
-              disabled={!canEdit}
-            >
+            <Select value={project.estrategicoTatico} onValueChange={(value: 'Estratégico' | 'Tático') => onUpdate('estrategicoTatico', value)} disabled={!canEdit}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -89,19 +66,13 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
           </div>
           <div className="md:col-span-2">
             <Label htmlFor="timeTI">Time Responsável</Label>
-            <Input 
-              id="timeTI" 
-              value={project.timeTI} 
-              onChange={e => onUpdate('timeTI', e.target.value)}
-              placeholder="Projetos, Infraestrutura, Segurança, Sustentação"
-              disabled={!canEdit}
-            />
+            <Input id="timeTI" value={project.timeTI} onChange={e => onUpdate('timeTI', e.target.value)} placeholder="Projetos, Infraestrutura, Segurança, Sustentação" disabled={!canEdit} />
           </div>
         </div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
           <div>
-            <Label className="text-sm font-medium">% Previsto</Label>
+            <Label className="text-sm font-medium">% Previsto Total</Label>
             <div className="text-2xl font-bold text-blue-600">{percentualPrevisto}%</div>
           </div>
           <div>
@@ -123,6 +94,5 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
