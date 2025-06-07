@@ -110,7 +110,7 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
           </div>
           <div>
             <Label className="text-sm font-medium">% Desvio</Label>
-            <div className={`text-2xl font-bold ${desvio >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`text-2xl font-bold ${desvio > 0 ? 'text-red-600' : 'text-green-600'}`}>
               {desvio > 0 ? '+' : ''}{desvio}%
             </div>
           </div>

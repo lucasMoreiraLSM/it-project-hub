@@ -5,10 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { Project } from '@/types/project';
 import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getFarolStatus, getDiasNaEtapa, getStatusCronograma, getStatusCronogramaStyle } from '@/utils/projectCalculations';
 import { ArrowLeft } from 'lucide-react';
+
 interface ProjectReportProps {
   project: Project;
   onBack: () => void;
 }
+
 export const ProjectReport: React.FC<ProjectReportProps> = ({
   project,
   onBack
@@ -17,6 +19,7 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({
   const percentualRealizado = calculatePercentualRealizado(project.cronograma);
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
   const farol = getFarolStatus(desvio);
+
   const getFarolColor = (status: string) => {
     switch (status) {
       case 'Verde':
@@ -29,6 +32,7 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({
         return 'bg-gray-500';
     }
   };
+
   return <div className="min-h-screen bg-gray-50 p-6 py-[14px]">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
@@ -75,7 +79,7 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({
                 </div>
                 <div>
                   <div className="text-sm font-medium text-gray-600">% Desvio</div>
-                  <div className={`text-2xl font-bold ${desvio >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`text-2xl font-bold ${desvio > 0 ? 'text-red-600' : 'text-green-600'}`}>
                     {desvio > 0 ? '+' : ''}{desvio}%
                   </div>
                 </div>
