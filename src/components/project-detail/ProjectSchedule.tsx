@@ -5,15 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import { ListSectionProps } from './types';
-import { 
-  getDiasNaEtapa, 
-  getStatusCronograma, 
-  getStatusCronogramaStyle,
-  calculateParticipacaoEtapaNormalizada,
-  calculatePlanejadoEtapa,
-  calculateRealizadoEtapa,
-  calculateTotalDias
-} from '@/utils/projectCalculations';
+import { getDiasNaEtapa, getStatusCronograma, getStatusCronogramaStyle } from '@/utils/projectCalculations';
 
 export const ProjectSchedule: React.FC<ListSectionProps> = ({
   project,
@@ -23,8 +15,6 @@ export const ProjectSchedule: React.FC<ListSectionProps> = ({
   canEdit
 }) => {
   const hoje = new Date().toLocaleDateString('pt-BR');
-  const participacoesNormalizadas = calculateParticipacaoEtapaNormalizada(project.cronograma);
-  const totalDias = calculateTotalDias(project.cronograma);
 
   return (
     <Card>
@@ -61,9 +51,6 @@ export const ProjectSchedule: React.FC<ListSectionProps> = ({
                 <th className="border border-gray-200 p-2 text-left">% Previsto</th>
                 <th className="border border-gray-200 p-2 text-left">% Realizado</th>
                 <th className="border border-gray-200 p-2 text-left">Dias na Etapa</th>
-                <th className="border border-gray-200 p-2 text-left">% Participação</th>
-                <th className="border border-gray-200 p-2 text-left">% Planejado Etapa</th>
-                <th className="border border-gray-200 p-2 text-left">% Realizado Etapa</th>
                 <th className="border border-gray-200 p-2 text-left">Dia Atual</th>
                 <th className="border border-gray-200 p-2 text-left">Ações</th>
               </tr>
@@ -72,9 +59,6 @@ export const ProjectSchedule: React.FC<ListSectionProps> = ({
               {project.cronograma.map((item, index) => {
                 const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
                 const status = getStatusCronograma(item);
-                const participacao = participacoesNormalizadas[index] || 0;
-                const planejadoEtapa = calculatePlanejadoEtapa(item, participacao, totalDias);
-                const realizadoEtapa = calculateRealizadoEtapa(item.percentualRealizado, participacao);
                 
                 return (
                   <tr key={index}>
@@ -144,9 +128,6 @@ export const ProjectSchedule: React.FC<ListSectionProps> = ({
                       />
                     </td>
                     <td className="border border-gray-200 p-2 text-center">{diasNaEtapa}</td>
-                    <td className="border border-gray-200 p-2 text-center">{participacao.toFixed(2)}%</td>
-                    <td className="border border-gray-200 p-2 text-center">{planejadoEtapa.toFixed(2)}%</td>
-                    <td className="border border-gray-200 p-2 text-center">{realizadoEtapa.toFixed(2)}%</td>
                     <td className="border border-gray-200 p-2 text-center">{hoje}</td>
                     <td className="border border-gray-200 p-2">
                       {canEdit && (
