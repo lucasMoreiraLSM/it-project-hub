@@ -3,30 +3,39 @@ import { Project, CronogramaItem } from '@/types/project';
 export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0;
   
-  const totalDias = cronograma.reduce((total, item) => {
-    const inicio = new Date(item.inicio);
-    const fim = new Date(item.fim);
-    const dias = Math.ceil((fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
-    return total + dias;
-  }, 0);
-
-  const diasPrevistosCompletados = cronograma.reduce((total, item) => {
-    const inicio = new Date(item.inicio);
-    const fim = new Date(item.fim);
-    const dias = Math.ceil((fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
-    const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
-    const diasParaCalcular = Math.min(diasNaEtapa, dias);
-    return total + diasParaCalcular;
-  }, 0);
-
-  return totalDias > 0 ? Math.round((diasPrevistosCompletados / totalDias) * 100) : 0;
+  // Somar todas as % Previstas
+  const somaPrevista = cronograma.reduce((total, item) => total + item.percentualPrevisto, 0);
+  
+  // Somar todas as % Realizadas
+  const somaRealizada = cronograma.reduce((total, item) => total + item.percentualRealizado, 0);
+  
+  // Soma total (Prevista + Realizada)
+  const somaTotal = somaPrevista + somaRealizada;
+  
+  // Se não há valores, retornar 0
+  if (somaTotal === 0) return 0;
+  
+  // % Prevista Total = (Soma_Prevista / (Soma_Prevista + Soma_Realizada)) × 100
+  return Math.round((somaPrevista / somaTotal) * 100);
 };
 
 export const calculatePercentualRealizado = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0;
   
-  const soma = cronograma.reduce((total, item) => total + item.percentualRealizado, 0);
-  return Math.round(soma / cronograma.length);
+  // Somar todas as % Previstas
+  const somaPrevista = cronograma.reduce((total, item) => total + item.percentualPrevisto, 0);
+  
+  // Somar todas as % Realizadas
+  const somaRealizada = cronograma.reduce((total, item) => total + item.percentualRealizado, 0);
+  
+  // Soma total (Prevista + Realizada)
+  const somaTotal = somaPrevista + somaRealizada;
+  
+  // Se não há valores, retornar 0
+  if (somaTotal === 0) return 0;
+  
+  // % Realizada Total = (Soma_Realizada / (Soma_Prevista + Soma_Realizada)) × 100
+  return Math.round((somaRealizada / somaTotal) * 100);
 };
 
 export const calculateDesvio = (previsto: number, realizado: number): number => {
