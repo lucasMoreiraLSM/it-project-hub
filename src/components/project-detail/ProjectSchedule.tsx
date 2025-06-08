@@ -20,7 +20,7 @@ export const ProjectSchedule: React.FC<ListSectionProps> = ({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          📊 Cronograma de Atividades Macro
+          📊 Cronograma de Atividades
           {canEdit && (
             <Button 
               size="sm" 

@@ -20,6 +20,12 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
   const farol = getFarolStatus(desvio);
 
+  // Calcular o total de dias
+  const totalDias = project.cronograma.reduce((total, item) => {
+    const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
+    return total + diasNaEtapa;
+  }, 0);
+
   const getFarolColor = (status: string) => {
     switch (status) {
       case 'Verde':
@@ -68,7 +74,7 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg">
                 <div>
                   <div className="text-sm font-medium text-gray-600">% Previsto</div>
                   <div className="text-2xl font-bold text-blue-600">{percentualPrevisto}%</div>
@@ -82,6 +88,10 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({
                   <div className={`text-2xl font-bold ${desvio > 0 ? 'text-red-600' : 'text-green-600'}`}>
                     {desvio > 0 ? '+' : ''}{desvio}%
                   </div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-600">Total de Dias</div>
+                  <div className="text-2xl font-bold text-purple-600">{totalDias}</div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-gray-600">Farol</div>
@@ -109,10 +119,10 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({
             </CardContent>
           </Card>
 
-          {/* Cronograma de Atividades Macro */}
+          {/* Cronograma de Atividades */}
           <Card className="mx-0 my-[10px]">
             <CardHeader className="mx-0">
-              <CardTitle>📊 Cronograma de Atividades Macro</CardTitle>
+              <CardTitle>📊 Cronograma de Atividades</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">

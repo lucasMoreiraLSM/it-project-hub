@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectSectionProps } from './types';
-import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getFarolStatus } from '@/utils/projectCalculations';
+import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getFarolStatus, getDiasNaEtapa } from '@/utils/projectCalculations';
 
 export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
   project,
@@ -16,6 +16,12 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
   const percentualRealizado = calculatePercentualRealizado(project.cronograma);
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
   const farol = getFarolStatus(desvio);
+
+  // Calcular o total de dias
+  const totalDias = project.cronograma.reduce((total, item) => {
+    const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
+    return total + diasNaEtapa;
+  }, 0);
 
   const getFarolColor = (status: string) => {
     switch (status) {
@@ -99,7 +105,7 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
           </div>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg">
           <div>
             <Label className="text-sm font-medium">% Previsto Total</Label>
             <div className="text-2xl font-bold text-blue-600">{percentualPrevisto}%</div>
@@ -113,6 +119,10 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
             <div className={`text-2xl font-bold ${desvio > 0 ? 'text-red-600' : 'text-green-600'}`}>
               {desvio > 0 ? '+' : ''}{desvio}%
             </div>
+          </div>
+          <div>
+            <Label className="text-sm font-medium">Total de Dias</Label>
+            <div className="text-2xl font-bold text-purple-600">{totalDias}</div>
           </div>
           <div>
             <Label className="text-sm font-medium">Farol</Label>
