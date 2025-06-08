@@ -88,7 +88,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               className="flex items-center gap-2"
             >
               <RefreshCw className="h-4 w-4" />
-              Atualizar Lista
+              Atualizar
             </Button>
             <Button 
               onClick={onShowDashboard} 
