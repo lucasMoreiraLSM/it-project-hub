@@ -96,7 +96,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               className="flex items-center gap-2"
             >
               <PieChart className="h-4 w-4" />
-              Painel de Gráficos
+              Dashboard
             </Button>
             <Button 
               onClick={onCreateProject} 
