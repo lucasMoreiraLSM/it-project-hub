@@ -36,9 +36,9 @@ export const calculateDesvio = (previsto: number, realizado: number): number => 
 
 export const getFarolStatus = (desvio: number): 'Verde' | 'Amarelo' | 'Vermelho' => {
   // Verde quando o % Desvio < 5%
-  if (desvio < 5) return 'Verde';
+  if (desvio <= 5) return 'Verde';
   // Amarelo quando % Desvio >= 5% e <= 10%
-  if (desvio >= 5 && desvio <= 10) return 'Amarelo';
+  if (desvio > 5 && desvio <= 10) return 'Amarelo';
   // Vermelho quando % Desvio > 10%
   return 'Vermelho';
 };
