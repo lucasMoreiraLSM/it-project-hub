@@ -8,6 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CreateProjectHistoryData } from '@/types/projectHistory';
 import { Project } from '@/types/project';
 import { Plus } from 'lucide-react';
+import { 
+  calculatePercentualPrevisto, 
+  calculatePercentualRealizado,
+  calculateDesvio,
+  getFarolStatus
+} from '@/utils/projectCalculations';
 
 interface ProjectHistoryFormProps {
   projectId: string;
@@ -22,7 +28,7 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
   onSubmit, 
   loading = false 
 }) => {
-  // Calculate current project data
+  // Calculate current project data using the correct calculation functions
   const calculateCurrentData = () => {
     if (!project?.cronograma || project.cronograma.length === 0) {
       return {
@@ -32,8 +38,9 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
       };
     }
 
-    const totalPrevisto = project.cronograma.reduce((sum, item) => sum + item.percentualPrevisto, 0);
-    const totalRealizado = project.cronograma.reduce((sum, item) => sum + item.percentualRealizado, 0);
+    // Use the existing calculation functions from utils
+    const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
+    const percentualRealizado = calculatePercentualRealizado(project.cronograma);
     
     // Calculate total days from cronograma
     const totalDias = project.cronograma.reduce((total, item) => {
@@ -44,14 +51,14 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
     }, 0);
 
     return {
-      percentual_previsto_total: totalPrevisto,
-      percentual_realizado_total: totalRealizado,
+      percentual_previsto_total: percentualPrevisto,
+      percentual_realizado_total: percentualRealizado,
       total_dias: totalDias
     };
   };
 
   const currentData = calculateCurrentData();
-  const initialDesvio = currentData.percentual_realizado_total - currentData.percentual_previsto_total;
+  const initialDesvio = calculateDesvio(currentData.percentual_previsto_total, currentData.percentual_realizado_total);
 
   const [formData, setFormData] = useState<CreateProjectHistoryData>({
     project_id: projectId,
@@ -59,7 +66,7 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
     percentual_realizado_total: currentData.percentual_realizado_total,
     percentual_desvio: initialDesvio,
     total_dias: currentData.total_dias,
-    farol: initialDesvio > 10 ? 'Vermelho' : initialDesvio > 5 ? 'Amarelo' : 'Verde',
+    farol: getFarolStatus(Math.abs(initialDesvio)),
     data_atualizacao: new Date().toISOString().split('T')[0]
   });
 
@@ -69,14 +76,14 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
       await onSubmit(formData);
       // Reset form with current project data
       const newCurrentData = calculateCurrentData();
-      const newDesvio = newCurrentData.percentual_realizado_total - newCurrentData.percentual_previsto_total;
+      const newDesvio = calculateDesvio(newCurrentData.percentual_previsto_total, newCurrentData.percentual_realizado_total);
       setFormData({
         project_id: projectId,
         percentual_previsto_total: newCurrentData.percentual_previsto_total,
         percentual_realizado_total: newCurrentData.percentual_realizado_total,
         percentual_desvio: newDesvio,
         total_dias: newCurrentData.total_dias,
-        farol: newDesvio > 10 ? 'Vermelho' : newDesvio > 5 ? 'Amarelo' : 'Verde',
+        farol: getFarolStatus(Math.abs(newDesvio)),
         data_atualizacao: new Date().toISOString().split('T')[0]
       });
     } catch (error) {
@@ -93,10 +100,12 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
 
   // Calculate deviation automatically
   React.useEffect(() => {
-    const desvio = formData.percentual_realizado_total - formData.percentual_previsto_total;
+    const desvio = calculateDesvio(formData.percentual_previsto_total, formData.percentual_realizado_total);
+    const farol = getFarolStatus(Math.abs(desvio));
     setFormData(prev => ({
       ...prev,
-      percentual_desvio: desvio
+      percentual_desvio: desvio,
+      farol: farol
     }));
   }, [formData.percentual_previsto_total, formData.percentual_realizado_total]);
 
