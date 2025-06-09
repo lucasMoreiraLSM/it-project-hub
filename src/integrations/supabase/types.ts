@@ -57,6 +57,48 @@ export type Database = {
         }
         Relationships: []
       }
+      project_history: {
+        Row: {
+          created_at: string
+          data_atualizacao: string
+          farol: string
+          id: string
+          percentual_desvio: number
+          percentual_previsto_total: number
+          percentual_realizado_total: number
+          project_id: string
+          total_dias: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          data_atualizacao?: string
+          farol?: string
+          id?: string
+          percentual_desvio?: number
+          percentual_previsto_total?: number
+          percentual_realizado_total?: number
+          project_id: string
+          total_dias?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          data_atualizacao?: string
+          farol?: string
+          id?: string
+          percentual_desvio?: number
+          percentual_previsto_total?: number
+          percentual_realizado_total?: number
+          project_id?: string
+          total_dias?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       project_locks: {
         Row: {
           expires_at: string

@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Project, EtapaExecutada } from '@/types/project';
 import { useProjectLock } from '@/hooks/useProjectLock';
+import { useProjectHistory } from '@/hooks/useProjectHistory';
 import { ProjectDetailHeader } from './project-detail/ProjectDetailHeader';
 import { ProjectBasicInfo } from './project-detail/ProjectBasicInfo';
 import { ProjectResponsibles } from './project-detail/ProjectResponsibles';
@@ -11,6 +13,9 @@ import { ProjectNextSteps } from './project-detail/ProjectNextSteps';
 import { ProjectSchedule } from './project-detail/ProjectSchedule';
 import { ProjectAttentionPoints } from './project-detail/ProjectAttentionPoints';
 import { ProjectLockedView } from './project-detail/ProjectLockedView';
+import { ProjectHistoryView } from './project-history/ProjectHistoryView';
+import { ProjectHistoryForm } from './project-history/ProjectHistoryForm';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ProjectDetailProps {
   project: Project;
@@ -37,6 +42,12 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
     releaseLock,
     checkLock
   } = useProjectLock(project.id);
+
+  const {
+    history,
+    loading: historyLoading,
+    createHistoryEntry
+  } = useProjectHistory(project.id);
 
   const handleEditClick = async () => {
     if (isEditMode) {
@@ -158,74 +169,99 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
           lastUpdatedAt={project.lastUpdatedAt}
         />
 
-        <div className="space-y-6">
-          <ProjectBasicInfo
-            project={editedProject}
-            onUpdate={handleUpdate}
-            canEdit={isEditMode}
-          />
+        <Tabs defaultValue="details" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="details">Detalhes do Projeto</TabsTrigger>
+            <TabsTrigger value="history">Histórico</TabsTrigger>
+          </TabsList>
 
-          <ProjectResponsibles
-            project={editedProject}
-            onUpdate={handleUpdate}
-            canEdit={isEditMode}
-          />
+          <TabsContent value="details" className="space-y-6">
+            <ProjectBasicInfo
+              project={editedProject}
+              onUpdate={handleUpdate}
+              canEdit={isEditMode}
+            />
 
-          <ProjectScope
-            project={editedProject}
-            addToList={addToList}
-            removeFromList={removeFromList}
-            updateListItem={updateListItem}
-            canEdit={isEditMode}
-            onUpdate={handleUpdate}
-          />
+            <ProjectResponsibles
+              project={editedProject}
+              onUpdate={handleUpdate}
+              canEdit={isEditMode}
+            />
 
-          <ProjectObjectives
-            project={editedProject}
-            addToList={addToList}
-            removeFromList={removeFromList}
-            updateListItem={updateListItem}
-            canEdit={isEditMode}
-            onUpdate={handleUpdate}
-          />
+            <ProjectScope
+              project={editedProject}
+              addToList={addToList}
+              removeFromList={removeFromList}
+              updateListItem={updateListItem}
+              canEdit={isEditMode}
+              onUpdate={handleUpdate}
+            />
 
-          <ProjectExecutedSteps
-            project={editedProject}
-            addToList={addToList}
-            removeFromList={removeFromList}
-            updateListItem={updateListItem}
-            canEdit={isEditMode}
-            onUpdate={handleUpdate}
-          />
+            <ProjectObjectives
+              project={editedProject}
+              addToList={addToList}
+              removeFromList={removeFromList}
+              updateListItem={updateListItem}
+              canEdit={isEditMode}
+              onUpdate={handleUpdate}
+            />
 
-          <ProjectNextSteps
-            project={editedProject}
-            addToList={addToList}
-            removeFromList={removeFromList}
-            updateListItem={updateListItem}
-            onCompleteStep={concluirEtapa}
-            canEdit={isEditMode}
-            onUpdate={handleUpdate}
-          />
+            <ProjectExecutedSteps
+              project={editedProject}
+              addToList={addToList}
+              removeFromList={removeFromList}
+              updateListItem={updateListItem}
+              canEdit={isEditMode}
+              onUpdate={handleUpdate}
+            />
 
-          <ProjectSchedule
-            project={editedProject}
-            addToList={addToList}
-            removeFromList={removeFromList}
-            updateListItem={updateListItem}
-            canEdit={isEditMode}
-            onUpdate={handleUpdate}
-          />
+            <ProjectNextSteps
+              project={editedProject}
+              addToList={addToList}
+              removeFromList={removeFromList}
+              updateListItem={updateListItem}
+              onCompleteStep={concluirEtapa}
+              canEdit={isEditMode}
+              onUpdate={handleUpdate}
+            />
 
-          <ProjectAttentionPoints
-            project={editedProject}
-            addToList={addToList}
-            removeFromList={removeFromList}
-            updateListItem={updateListItem}
-            canEdit={isEditMode}
-            onUpdate={handleUpdate}
-          />
-        </div>
+            <ProjectSchedule
+              project={editedProject}
+              addToList={addToList}
+              removeFromList={removeFromList}
+              updateListItem={updateListItem}
+              canEdit={isEditMode}
+              onUpdate={handleUpdate}
+            />
+
+            <ProjectAttentionPoints
+              project={editedProject}
+              addToList={addToList}
+              removeFromList={removeFromList}
+              updateListItem={updateListItem}
+              canEdit={isEditMode}
+              onUpdate={handleUpdate}
+            />
+          </TabsContent>
+
+          <TabsContent value="history" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1">
+                <ProjectHistoryForm
+                  projectId={project.id}
+                  onSubmit={createHistoryEntry}
+                  loading={historyLoading}
+                />
+              </div>
+              <div className="lg:col-span-2">
+                <ProjectHistoryView
+                  history={history}
+                  loading={historyLoading}
+                />
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
