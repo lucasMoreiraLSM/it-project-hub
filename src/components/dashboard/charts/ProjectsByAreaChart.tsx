@@ -17,10 +17,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-        <p className="font-medium">{`${label}: ${payload[0].value}`}</p>
-        {payload[0].payload.fullName && (
-          <p className="text-sm text-gray-600">{payload[0].payload.fullName}</p>
-        )}
+        <p className="font-medium">{`${payload[0].payload.fullName || label}: ${payload[0].value}`}</p>
       </div>
     );
   }
@@ -35,10 +32,10 @@ export const ProjectsByAreaChart: React.FC<ProjectsByAreaChartProps> = ({ data }
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data} layout="horizontal">
+          <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" />
-            <YAxis dataKey="name" type="category" width={120} />
+            <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} fontSize={12} />
+            <YAxis />
             <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="value" fill="#10B981" />
           </BarChart>

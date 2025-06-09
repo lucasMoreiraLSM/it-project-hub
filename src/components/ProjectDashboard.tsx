@@ -47,7 +47,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ projects, on
       classificacoes: [...new Set(projects.map(p => p.estrategicoTatico).filter(Boolean))],
       timesProjetos: [...new Set(projects.map(p => p.timeTI).filter(Boolean))],
       gerentesProjeto: [...new Set(projects.map(p => p.gerenteProjetos).filter(Boolean))],
-      statusGeral: ['Não Iniciado', 'Em Andamento', 'Concluído'],
+      statusGeral: ['Não Iniciado', 'Em Andamento', 'Concluído', 'Atrasado'],
       areasNegocio: [...new Set(projects.map(p => p.areaNegocio).filter(Boolean))]
     };
   }, [projects]);
@@ -111,8 +111,8 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ projects, on
       return { name: area.length > 15 ? area.substring(0, 15) + '...' : area, fullName: area, value: count };
     });
 
-    // Top 10 Líderes de Projeto
-    const liderData = filterOptions.gerentesProjeto
+    // Top 10 Gerentes de Projeto
+    const gerenteData = filterOptions.gerentesProjeto
       .map(gerente => {
         const count = filteredProjects.filter(p => p.gerenteProjetos === gerente).length;
         return { name: gerente.length > 20 ? gerente.substring(0, 20) + '...' : gerente, fullName: gerente, value: count };
@@ -120,17 +120,26 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ projects, on
       .sort((a, b) => b.value - a.value)
       .slice(0, 10);
 
-    // Distribuição por Status
+    // Distribuição por Status Geral
     const statusData = filterOptions.statusGeral.map(status => {
       const count = filteredProjects.filter(p => getStatusGeral(p.cronograma) === status).length;
       let color = '#6B7280';
       if (status === 'Concluído') color = '#10B981';
       if (status === 'Em Andamento') color = '#3B82F6';
       if (status === 'Não Iniciado') color = '#F59E0B';
+      if (status === 'Atrasado') color = '#EF4444';
       return { name: status, value: count, color };
     });
 
-    return { classificacaoData, tipoData, areaData, liderData, statusData };
+    // Projetos por Líder de Projetos TI
+    const liderTIData = [...new Set(filteredProjects.map(p => p.liderProjetosTI).filter(Boolean))]
+      .map(lider => {
+        const count = filteredProjects.filter(p => p.liderProjetosTI === lider).length;
+        return { name: lider.length > 25 ? lider.substring(0, 25) + '...' : lider, fullName: lider, value: count };
+      })
+      .sort((a, b) => b.value - a.value);
+
+    return { classificacaoData, tipoData, areaData, gerenteData, statusData, liderTIData };
   }, [filteredProjects, filterOptions]);
 
   // KPIs
@@ -140,13 +149,8 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ projects, on
     const concluidos = filteredProjects.filter(p => getStatusGeral(p.cronograma) === 'Concluído').length;
     const percentualConclusao = total > 0 ? Math.round((concluidos / total) * 100) : 0;
 
-    // Calcular projetos atrasados (farol vermelho)
-    const atrasados = filteredProjects.filter(project => {
-      const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
-      const percentualRealizado = calculatePercentualRealizado(project.cronograma);
-      const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
-      return getFarolStatus(desvio) === 'Vermelho';
-    }).length;
+    // Calcular projetos atrasados usando status geral
+    const atrasados = filteredProjects.filter(p => getStatusGeral(p.cronograma) === 'Atrasado').length;
 
     return { total, emAndamento, atrasados, percentualConclusao };
   }, [filteredProjects]);

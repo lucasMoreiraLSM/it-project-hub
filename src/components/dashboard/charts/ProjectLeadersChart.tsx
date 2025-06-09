@@ -9,7 +9,7 @@ interface ChartData {
   value: number;
 }
 
-interface TopManagersChartProps {
+interface ProjectLeadersChartProps {
   data: ChartData[];
 }
 
@@ -24,20 +24,20 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export const TopManagersChart: React.FC<TopManagersChartProps> = ({ data }) => {
+export const ProjectLeadersChart: React.FC<ProjectLeadersChartProps> = ({ data }) => {
   return (
-    <Card>
+    <Card className="lg:col-span-2">
       <CardHeader>
-        <CardTitle>Top 10 Gerentes de Projeto</CardTitle>
+        <CardTitle>Projetos por Líder de Projetos TI</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={data} layout="horizontal">
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} fontSize={12} />
-            <YAxis />
+            <XAxis type="number" />
+            <YAxis dataKey="name" type="category" width={200} fontSize={12} />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="value" fill="#06B6D4" />
+            <Bar dataKey="value" fill="#8B5CF6" />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
