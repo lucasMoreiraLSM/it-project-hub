@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectSectionProps } from './types';
 import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getFarolStatus, getDiasNaEtapa } from '@/utils/projectCalculations';
+import { SelectWithCustomInput } from './SelectWithCustomInput';
 
 export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
   project,
@@ -36,6 +37,34 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
     }
   };
 
+  // Opções predefinidas para Área de Negócio
+  const areasNegocio = [
+    'Comercial',
+    'Financeiro',
+    'Operações',
+    'Recursos Humanos',
+    'Marketing',
+    'Tecnologia da Informação',
+    'Logística',
+    'Jurídico',
+    'Compliance',
+    'Atendimento ao Cliente'
+  ];
+
+  // Opções predefinidas para Time Responsável
+  const timesResponsaveis = [
+    'Projetos',
+    'Infraestrutura',
+    'Segurança',
+    'Sustentação',
+    'Desenvolvimento',
+    'Banco de Dados',
+    'Redes',
+    'Suporte',
+    'Qualidade',
+    'Arquitetura'
+  ];
+
   return (
     <Card>
       <CardHeader>
@@ -54,11 +83,13 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
           </div>
           <div>
             <Label htmlFor="areaNegocio">Área de Negócio</Label>
-            <Input 
-              id="areaNegocio" 
-              value={project.areaNegocio} 
-              onChange={e => onUpdate('areaNegocio', e.target.value)} 
-              disabled={!canEdit} 
+            <SelectWithCustomInput
+              id="areaNegocio"
+              value={project.areaNegocio}
+              onValueChange={(value) => onUpdate('areaNegocio', value)}
+              options={areasNegocio}
+              placeholder="Selecione uma área de negócio"
+              disabled={!canEdit}
             />
           </div>
           <div>
@@ -95,12 +126,13 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
           </div>
           <div className="md:col-span-2">
             <Label htmlFor="timeTI">Time Responsável</Label>
-            <Input 
-              id="timeTI" 
-              value={project.timeTI} 
-              onChange={e => onUpdate('timeTI', e.target.value)} 
-              placeholder="Projetos, Infraestrutura, Segurança, Sustentação" 
-              disabled={!canEdit} 
+            <SelectWithCustomInput
+              id="timeTI"
+              value={project.timeTI}
+              onValueChange={(value) => onUpdate('timeTI', value)}
+              options={timesResponsaveis}
+              placeholder="Selecione um time responsável"
+              disabled={!canEdit}
             />
           </div>
         </div>
