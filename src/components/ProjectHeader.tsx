@@ -10,11 +10,20 @@ export const ProjectHeader = () => {
   const [showUserProfile, setShowUserProfile] = useState(false);
 
   return (
-    <div className="border-b border-gray-200 px-6 py-4 bg-[183989_] bg-[#183989]">
+    <div className="border-b border-gray-200 px-6 py-4 bg-[#183989]">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <h1 className="text-2xl text-slate-50 mx-0 my-0 px-0 py-0 font-extrabold">
-          IT Project Hub - Gestão de Projetos 
-        </h1>
+        <div className="flex items-center gap-4">
+          <img 
+            src="/lovable-uploads/6002a9d0-aa98-4ed0-8082-a7e6ec5fc014.png" 
+            alt="Logo Araguaia"
+            className="h-12 w-auto"
+          />
+          <img 
+            src="/lovable-uploads/20020c57-14d3-4551-ad46-f00eaccafa93.png" 
+            alt="IT Project Hub"
+            className="h-12 w-auto"
+          />
+        </div>
         
         {user && (
           <div className="flex items-center gap-4">
