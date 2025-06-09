@@ -103,11 +103,7 @@ export const ProjectHistoryView: React.FC<ProjectHistoryViewProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">
-                      {new Date(entry.data_atualizacao).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
+                      {new Date(entry.data_atualizacao).toLocaleDateString('pt-BR')}
                     </span>
                     <Badge className={`${getFarolColor(entry.farol)} text-white`}>
                       {entry.farol}
