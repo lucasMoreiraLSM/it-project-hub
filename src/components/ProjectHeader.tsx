@@ -21,7 +21,7 @@ export const ProjectHeader = () => {
           <img 
             src="/lovable-uploads/20020c57-14d3-4551-ad46-f00eaccafa93.png" 
             alt="IT Project Hub"
-            className="h-16 w-auto"
+            className="h-25 w-auto"
           />
         </div>
         
