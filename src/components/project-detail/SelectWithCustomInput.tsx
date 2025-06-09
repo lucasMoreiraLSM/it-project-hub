@@ -56,7 +56,10 @@ export const SelectWithCustomInput: React.FC<SelectWithCustomInputProps> = ({
     setCustomValue('');
   };
 
-  const handleDeleteOption = (optionToDelete: string) => {
+  const handleDeleteOption = (optionToDelete: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
     if (onOptionsChange) {
       const updatedOptions = options.filter(option => option !== optionToDelete);
       onOptionsChange(updatedOptions);
@@ -102,25 +105,21 @@ export const SelectWithCustomInput: React.FC<SelectWithCustomInputProps> = ({
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (
-          <SelectItem key={option} value={option} className="group">
-            <div className="flex items-center justify-between w-full">
-              <span>{option}</span>
-              {onOptionsChange && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 ml-2"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleDeleteOption(option);
-                  }}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
-          </SelectItem>
+          <div key={option} className="relative">
+            <SelectItem value={option} className="pr-8">
+              {option}
+            </SelectItem>
+            {onOptionsChange && (
+              <button
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50"
+                onClick={(e) => handleDeleteOption(option, e)}
+                onMouseDown={(e) => e.preventDefault()}
+                type="button"
+              >
+                <X className="h-3 w-3 text-gray-500 hover:text-red-500" />
+              </button>
+            )}
+          </div>
         ))}
         <SelectItem value="custom" className="font-medium text-blue-600">
           <div className="flex items-center gap-2">
