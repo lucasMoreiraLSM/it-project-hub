@@ -110,31 +110,57 @@ export const useCustomFieldOptions = (fieldName: string) => {
 
   const checkIfOptionInUse = async (fieldName: string, optionValue: string): Promise<boolean> => {
     try {
-      let columnName = '';
+      // Create individual queries for each field to avoid TypeScript type issues
+      let queryPromise;
       
-      // Mapear nome do campo para nome da coluna na tabela projetos
-      if (fieldName === 'areaNegocio') {
-        columnName = 'area_negocio';
-      } else if (fieldName === 'timeTI') {
-        columnName = 'time_ti';
-      } else if (fieldName === 'inovacaoMelhoria') {
-        columnName = 'inovacao_melhoria';
-      } else if (fieldName === 'estrategicoTatico') {
-        columnName = 'estrategico_tatico';
-      } else if (fieldName === 'gerenteProjetos') {
-        columnName = 'gerente_projetos';
-      } else if (fieldName === 'liderProjetosTI') {
-        columnName = 'lider_projetos_ti';
-      } else {
-        return false;
+      switch (fieldName) {
+        case 'areaNegocio':
+          queryPromise = supabase
+            .from('projetos')
+            .select('id')
+            .eq('area_negocio', optionValue)
+            .limit(1);
+          break;
+        case 'timeTI':
+          queryPromise = supabase
+            .from('projetos')
+            .select('id')
+            .eq('time_ti', optionValue)
+            .limit(1);
+          break;
+        case 'inovacaoMelhoria':
+          queryPromise = supabase
+            .from('projetos')
+            .select('id')
+            .eq('inovacao_melhoria', optionValue)
+            .limit(1);
+          break;
+        case 'estrategicoTatico':
+          queryPromise = supabase
+            .from('projetos')
+            .select('id')
+            .eq('estrategico_tatico', optionValue)
+            .limit(1);
+          break;
+        case 'gerenteProjetos':
+          queryPromise = supabase
+            .from('projetos')
+            .select('id')
+            .eq('gerente_projetos', optionValue)
+            .limit(1);
+          break;
+        case 'liderProjetosTI':
+          queryPromise = supabase
+            .from('projetos')
+            .select('id')
+            .eq('lider_projetos_ti', optionValue)
+            .limit(1);
+          break;
+        default:
+          return false;
       }
 
-      // Use a simple select with explicit typing
-      const { data, error } = await supabase
-        .from('projetos')
-        .select('id')
-        .eq(columnName as any, optionValue)
-        .limit(1);
+      const { data, error } = await queryPromise;
 
       if (error) {
         console.error('Erro ao verificar uso da opção:', error);
