@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 
 interface ChartData {
   name: string;
@@ -27,6 +27,22 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+const CustomLabel = (props: any) => {
+  const { x, y, width, value } = props;
+  return (
+    <text 
+      x={x + width / 2} 
+      y={y - 5} 
+      fill="#374151" 
+      textAnchor="middle" 
+      fontSize={14}
+      fontWeight="600"
+    >
+      {value}
+    </text>
+  );
+};
+
 export const ProjectsByTypeChart: React.FC<ProjectsByTypeChartProps> = ({ data }) => {
   return (
     <Card>
@@ -35,12 +51,14 @@ export const ProjectsByTypeChart: React.FC<ProjectsByTypeChartProps> = ({ data }
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
+          <BarChart data={data} margin={{ top: 30, right: 20, left: 20, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis />
+            <YAxis domain={[0, 'dataMax']} />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="value" fill="#8B5CF6" />
+            <Bar dataKey="value" fill="#8B5CF6">
+              <LabelList content={<CustomLabel />} />
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
