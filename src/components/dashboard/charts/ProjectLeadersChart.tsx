@@ -25,14 +25,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const CustomLabel = (props: any) => {
-  const { x, y, width, height, value } = props;
+  const { x, y, width, value } = props;
   return (
     <text 
-      x={x + width + 5} 
-      y={y + height / 2} 
+      x={x + width / 2} 
+      y={y - 5} 
       fill="#374151" 
-      textAnchor="start" 
-      dy={4}
+      textAnchor="middle" 
       fontSize={14}
       fontWeight="600"
     >
@@ -51,23 +50,20 @@ export const ProjectLeadersChart: React.FC<ProjectLeadersChartProps> = ({ data }
         <ResponsiveContainer width="100%" height={400}>
           <BarChart 
             data={data} 
-            layout="horizontal"
-            margin={{ top: 20, right: 80, left: 20, bottom: 20 }}
+            margin={{ top: 30, right: 20, left: 20, bottom: 60 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
-              type="number" 
-              domain={[0, 'dataMax']}
-              axisLine={true}
-              tickLine={true}
+              dataKey="name" 
+              angle={-45}
+              textAnchor="end"
+              height={60}
+              fontSize={11}
+              interval={0}
             />
             <YAxis 
-              type="category" 
-              dataKey="name" 
-              width={180}
+              domain={[0, 'dataMax']}
               fontSize={12}
-              axisLine={true}
-              tickLine={true}
             />
             <Tooltip content={<CustomTooltip />} />
             <Bar 
