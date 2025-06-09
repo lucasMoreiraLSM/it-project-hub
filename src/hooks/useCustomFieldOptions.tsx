@@ -3,12 +3,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-interface CustomFieldOption {
-  id: string;
-  field_name: string;
-  option_value: string;
-}
-
 export const useCustomFieldOptions = (fieldName: string) => {
   const [options, setOptions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +18,7 @@ export const useCustomFieldOptions = (fieldName: string) => {
 
       if (error) throw error;
 
-      setOptions(data.map(item => item.option_value));
+      setOptions(data?.map(item => item.option_value) || []);
     } catch (error) {
       console.error('Erro ao carregar opções:', error);
       toast({
