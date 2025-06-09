@@ -31,7 +31,7 @@ export const useCustomFieldOptions = (fieldName: string) => {
     }
   };
 
-  const addOption = async (newOption: string) => {
+  const addOption = async (newOption: string): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('custom_field_options')
@@ -69,7 +69,7 @@ export const useCustomFieldOptions = (fieldName: string) => {
     }
   };
 
-  const removeOption = async (optionToRemove: string) => {
+  const removeOption = async (optionToRemove: string): Promise<boolean> => {
     try {
       // Verificar se a opção está sendo usada em algum projeto
       const isInUse = await checkIfOptionInUse(fieldName, optionToRemove);
@@ -113,27 +113,20 @@ export const useCustomFieldOptions = (fieldName: string) => {
       let columnName = '';
       
       // Mapear nome do campo para nome da coluna na tabela projetos
-      switch (fieldName) {
-        case 'areaNegocio':
-          columnName = 'area_negocio';
-          break;
-        case 'timeTI':
-          columnName = 'time_ti';
-          break;
-        case 'inovacaoMelhoria':
-          columnName = 'inovacao_melhoria';
-          break;
-        case 'estrategicoTatico':
-          columnName = 'estrategico_tatico';
-          break;
-        case 'gerenteProjetos':
-          columnName = 'gerente_projetos';
-          break;
-        case 'liderProjetosTI':
-          columnName = 'lider_projetos_ti';
-          break;
-        default:
-          return false;
+      if (fieldName === 'areaNegocio') {
+        columnName = 'area_negocio';
+      } else if (fieldName === 'timeTI') {
+        columnName = 'time_ti';
+      } else if (fieldName === 'inovacaoMelhoria') {
+        columnName = 'inovacao_melhoria';
+      } else if (fieldName === 'estrategicoTatico') {
+        columnName = 'estrategico_tatico';
+      } else if (fieldName === 'gerenteProjetos') {
+        columnName = 'gerente_projetos';
+      } else if (fieldName === 'liderProjetosTI') {
+        columnName = 'lider_projetos_ti';
+      } else {
+        return false;
       }
 
       const { data, error } = await supabase
