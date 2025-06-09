@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,7 +33,7 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
       return {
         percentual_previsto_total: 0,
         percentual_realizado_total: 0,
-        total_dias: 0
+        primeiraDataInicio: null
       };
     }
 
@@ -42,45 +41,45 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
     const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
     const percentualRealizado = calculatePercentualRealizado(project.cronograma);
     
-    // Calculate total days correctly - from earliest start to latest end date
-    let dataInicio: Date | null = null;
-    let dataFim: Date | null = null;
+    // Find the earliest start date from the schedule
+    let primeiraDataInicio: Date | null = null;
     
     project.cronograma.forEach(item => {
       const inicio = new Date(item.inicio);
-      const fim = new Date(item.fim);
       
-      if (!dataInicio || inicio < dataInicio) {
-        dataInicio = inicio;
-      }
-      
-      if (!dataFim || fim > dataFim) {
-        dataFim = fim;
+      if (!primeiraDataInicio || inicio < primeiraDataInicio) {
+        primeiraDataInicio = inicio;
       }
     });
-    
-    const totalDias = dataInicio && dataFim 
-      ? Math.ceil((dataFim.getTime() - dataInicio.getTime()) / (1000 * 60 * 60 * 24)) + 1
-      : 0;
 
     return {
       percentual_previsto_total: percentualPrevisto,
       percentual_realizado_total: percentualRealizado,
-      total_dias: totalDias
+      primeiraDataInicio
     };
+  };
+
+  const calculateTotalDias = (dataAtualizacao: string, primeiraDataInicio: Date | null): number => {
+    if (!primeiraDataInicio || !dataAtualizacao) return 0;
+    
+    const dataAtual = new Date(dataAtualizacao);
+    const diffTime = dataAtual.getTime() - primeiraDataInicio.getTime();
+    return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
   };
 
   const currentData = calculateCurrentData();
   const initialDesvio = calculateDesvio(currentData.percentual_previsto_total, currentData.percentual_realizado_total);
+  const currentDate = new Date().toISOString().split('T')[0];
+  const initialTotalDias = calculateTotalDias(currentDate, currentData.primeiraDataInicio);
 
   const [formData, setFormData] = useState<CreateProjectHistoryData>({
     project_id: projectId,
     percentual_previsto_total: currentData.percentual_previsto_total,
     percentual_realizado_total: currentData.percentual_realizado_total,
     percentual_desvio: initialDesvio,
-    total_dias: currentData.total_dias,
+    total_dias: initialTotalDias,
     farol: getFarolStatus(Math.abs(initialDesvio)),
-    data_atualizacao: new Date().toISOString().split('T')[0]
+    data_atualizacao: currentDate
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,14 +89,17 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
       // Reset form with current project data
       const newCurrentData = calculateCurrentData();
       const newDesvio = calculateDesvio(newCurrentData.percentual_previsto_total, newCurrentData.percentual_realizado_total);
+      const newCurrentDate = new Date().toISOString().split('T')[0];
+      const newTotalDias = calculateTotalDias(newCurrentDate, newCurrentData.primeiraDataInicio);
+      
       setFormData({
         project_id: projectId,
         percentual_previsto_total: newCurrentData.percentual_previsto_total,
         percentual_realizado_total: newCurrentData.percentual_realizado_total,
         percentual_desvio: newDesvio,
-        total_dias: newCurrentData.total_dias,
+        total_dias: newTotalDias,
         farol: getFarolStatus(Math.abs(newDesvio)),
-        data_atualizacao: new Date().toISOString().split('T')[0]
+        data_atualizacao: newCurrentDate
       });
     } catch (error) {
       // Error handling is done in the hook
@@ -121,6 +123,15 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
       farol: farol
     }));
   }, [formData.percentual_previsto_total, formData.percentual_realizado_total]);
+
+  // Recalculate total days when data_atualizacao changes
+  React.useEffect(() => {
+    const newTotalDias = calculateTotalDias(formData.data_atualizacao, currentData.primeiraDataInicio);
+    setFormData(prev => ({
+      ...prev,
+      total_dias: newTotalDias
+    }));
+  }, [formData.data_atualizacao, currentData.primeiraDataInicio]);
 
   return (
     <Card>
@@ -150,8 +161,8 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
                 type="number"
                 min="0"
                 value={formData.total_dias}
-                onChange={(e) => handleInputChange('total_dias', parseInt(e.target.value) || 0)}
-                required
+                disabled
+                className="bg-gray-100"
               />
             </div>
           </div>
