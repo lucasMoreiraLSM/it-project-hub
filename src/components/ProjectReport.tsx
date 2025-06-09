@@ -1,10 +1,13 @@
-import React from 'react';
+
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Project } from '@/types/project';
 import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getFarolStatus, getDiasNaEtapa, getStatusCronograma, getStatusCronogramaStyle } from '@/utils/projectCalculations';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Download, FileImage, FileText } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface ProjectReportProps {
   project: Project;
@@ -15,6 +18,9 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({
   project,
   onBack
 }) => {
+  const [showScope, setShowScope] = useState(true);
+  const reportRef = useRef<HTMLDivElement>(null);
+
   const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
   const percentualRealizado = calculatePercentualRealizado(project.cronograma);
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
@@ -39,6 +45,62 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({
     }
   };
 
+  const exportToPNG = async () => {
+    if (!reportRef.current) return;
+    
+    try {
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      const link = document.createElement('a');
+      link.download = `relatorio-${project.nome.replace(/\s+/g, '-').toLowerCase()}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    } catch (error) {
+      console.error('Erro ao exportar PNG:', error);
+    }
+  };
+
+  const exportToPDF = async () => {
+    if (!reportRef.current) return;
+    
+    try {
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      
+      let position = 0;
+      
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      pdf.save(`relatorio-${project.nome.replace(/\s+/g, '-').toLowerCase()}.pdf`);
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+    }
+  };
+
   return <div className="min-h-screen bg-gray-50 p-6 py-[14px]">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
@@ -47,9 +109,38 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({
             Voltar
           </Button>
           <h1 className="text-3xl font-bold text-gray-900">Relatório do Projeto</h1>
+          
+          <div className="flex items-center gap-2 ml-auto">
+            <Button
+              variant="outline"
+              onClick={() => setShowScope(!showScope)}
+              className="flex items-center gap-2"
+            >
+              {showScope ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showScope ? 'Ocultar' : 'Mostrar'} Escopo
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={exportToPNG}
+              className="flex items-center gap-2"
+            >
+              <FileImage className="h-4 w-4" />
+              Exportar PNG
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={exportToPDF}
+              className="flex items-center gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Exportar PDF
+            </Button>
+          </div>
         </div>
 
-        <div className="space-y-6">
+        <div ref={reportRef} className="space-y-6">
           {/* Dados do Projeto */}
           <Card>
             <CardHeader>
@@ -118,6 +209,26 @@ export const ProjectReport: React.FC<ProjectReportProps> = ({
               </div>
             </CardContent>
           </Card>
+
+          {/* Escopo do Projeto - Condicional */}
+          {showScope && (
+            <Card>
+              <CardHeader>
+                <CardTitle>📝 Escopo do Projeto</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {project.escopo.length > 0 ? (
+                  <ul className="list-disc list-inside space-y-1">
+                    {project.escopo.map((item, index) => (
+                      <li key={index} className="text-gray-700">{item}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500">Nenhum item de escopo definido</p>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Cronograma de Atividades */}
           <Card className="mx-0 my-[10px]">
