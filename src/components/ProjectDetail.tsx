@@ -34,7 +34,8 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
     removeFromList,
     updateListItem,
     concluirEtapa,
-    createHistoryEntry
+    createHistoryEntry,
+    deleteHistoryEntry
   } = useProjectDetailLogic({ project, onUpdate, onBack });
 
   // Se o projeto está bloqueado por outro usuário e tentamos editar
@@ -74,6 +75,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
           onCompleteStep={concluirEtapa}
           historyLoading={historyLoading}
           onCreateHistory={createHistoryEntry}
+          onDeleteHistory={deleteHistoryEntry}
           history={history}
         />
       </div>

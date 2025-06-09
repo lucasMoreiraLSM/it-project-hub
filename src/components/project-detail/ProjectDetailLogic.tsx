@@ -28,7 +28,8 @@ export const useProjectDetailLogic = ({ project, onUpdate, onBack }: UseProjectD
   const {
     history,
     loading: historyLoading,
-    createHistoryEntry
+    createHistoryEntry,
+    deleteHistoryEntry
   } = useProjectHistory(project.id);
 
   const handleEditClick = async () => {
@@ -140,6 +141,7 @@ export const useProjectDetailLogic = ({ project, onUpdate, onBack }: UseProjectD
     removeFromList,
     updateListItem,
     concluirEtapa,
-    createHistoryEntry
+    createHistoryEntry,
+    deleteHistoryEntry
   };
 };

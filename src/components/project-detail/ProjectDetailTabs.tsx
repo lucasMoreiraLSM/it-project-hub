@@ -16,6 +16,7 @@ interface ProjectDetailTabsProps {
   onCompleteStep: (index: number) => void;
   historyLoading: boolean;
   onCreateHistory: (data: any) => Promise<void>;
+  onDeleteHistory: (id: string) => Promise<void>;
   history: any[];
 }
 
@@ -30,6 +31,7 @@ export const ProjectDetailTabs: React.FC<ProjectDetailTabsProps> = ({
   onCompleteStep,
   historyLoading,
   onCreateHistory,
+  onDeleteHistory,
   history
 }) => {
   return (
@@ -53,8 +55,9 @@ export const ProjectDetailTabs: React.FC<ProjectDetailTabsProps> = ({
 
       <TabsContent value="history" className="space-y-6">
         <ProjectHistoryTab
-          projectId={project.id}
+          project={project}
           onCreateHistory={onCreateHistory}
+          onDeleteHistory={onDeleteHistory}
           history={history}
           loading={historyLoading}
         />

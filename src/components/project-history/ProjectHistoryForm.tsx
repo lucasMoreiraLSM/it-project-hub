@@ -6,26 +6,60 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreateProjectHistoryData } from '@/types/projectHistory';
+import { Project } from '@/types/project';
 import { Plus } from 'lucide-react';
 
 interface ProjectHistoryFormProps {
   projectId: string;
+  project?: Project;
   onSubmit: (data: CreateProjectHistoryData) => Promise<void>;
   loading?: boolean;
 }
 
 export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({ 
   projectId, 
+  project,
   onSubmit, 
   loading = false 
 }) => {
+  // Calculate current project data
+  const calculateCurrentData = () => {
+    if (!project?.cronograma || project.cronograma.length === 0) {
+      return {
+        percentual_previsto_total: 0,
+        percentual_realizado_total: 0,
+        total_dias: 0
+      };
+    }
+
+    const totalPrevisto = project.cronograma.reduce((sum, item) => sum + item.percentualPrevisto, 0);
+    const totalRealizado = project.cronograma.reduce((sum, item) => sum + item.percentualRealizado, 0);
+    
+    // Calculate total days from cronograma
+    const totalDias = project.cronograma.reduce((total, item) => {
+      const inicio = new Date(item.inicio);
+      const fim = new Date(item.fim);
+      const dias = Math.ceil((fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
+      return total + dias;
+    }, 0);
+
+    return {
+      percentual_previsto_total: totalPrevisto,
+      percentual_realizado_total: totalRealizado,
+      total_dias: totalDias
+    };
+  };
+
+  const currentData = calculateCurrentData();
+  const initialDesvio = currentData.percentual_realizado_total - currentData.percentual_previsto_total;
+
   const [formData, setFormData] = useState<CreateProjectHistoryData>({
     project_id: projectId,
-    percentual_previsto_total: 0,
-    percentual_realizado_total: 0,
-    percentual_desvio: 0,
-    total_dias: 0,
-    farol: 'Verde',
+    percentual_previsto_total: currentData.percentual_previsto_total,
+    percentual_realizado_total: currentData.percentual_realizado_total,
+    percentual_desvio: initialDesvio,
+    total_dias: currentData.total_dias,
+    farol: initialDesvio > 10 ? 'Vermelho' : initialDesvio > 5 ? 'Amarelo' : 'Verde',
     data_atualizacao: new Date().toISOString().split('T')[0]
   });
 
@@ -33,14 +67,16 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
     e.preventDefault();
     try {
       await onSubmit(formData);
-      // Reset form
+      // Reset form with current project data
+      const newCurrentData = calculateCurrentData();
+      const newDesvio = newCurrentData.percentual_realizado_total - newCurrentData.percentual_previsto_total;
       setFormData({
         project_id: projectId,
-        percentual_previsto_total: 0,
-        percentual_realizado_total: 0,
-        percentual_desvio: 0,
-        total_dias: 0,
-        farol: 'Verde',
+        percentual_previsto_total: newCurrentData.percentual_previsto_total,
+        percentual_realizado_total: newCurrentData.percentual_realizado_total,
+        percentual_desvio: newDesvio,
+        total_dias: newCurrentData.total_dias,
+        farol: newDesvio > 10 ? 'Vermelho' : newDesvio > 5 ? 'Amarelo' : 'Verde',
         data_atualizacao: new Date().toISOString().split('T')[0]
       });
     } catch (error) {
