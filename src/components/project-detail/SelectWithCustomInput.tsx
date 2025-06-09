@@ -105,18 +105,18 @@ export const SelectWithCustomInput: React.FC<SelectWithCustomInputProps> = ({
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (
-          <div key={option} className="relative">
+          <div key={option} className="relative group">
             <SelectItem value={option} className="pr-8">
               {option}
             </SelectItem>
             {onOptionsChange && (
               <button
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-red-50 rounded transition-colors z-50"
                 onClick={(e) => handleDeleteOption(option, e)}
                 onMouseDown={(e) => e.preventDefault()}
                 type="button"
               >
-                <X className="h-3 w-3 text-gray-500 hover:text-red-500" />
+                <X className="h-3 w-3 text-red-500 hover:text-red-700" />
               </button>
             )}
           </div>
