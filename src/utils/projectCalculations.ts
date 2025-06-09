@@ -55,15 +55,19 @@ export const getStatusProjeto = (desvio: number): 'green' | 'yellow' | 'red' => 
 export const getStatusOrcamento = (cronograma: CronogramaItem[]): 'Em Andamento' | 'Atrasado' | 'Concluído' => {
   const hoje = new Date();
   const percentualRealizado = calculatePercentualRealizado(cronograma);
+  const percentualPrevisto  = calculatePercentualPrevisto(cronograma);
   
   if (percentualRealizado === 100) return 'Concluído';
+  if (percentualPrevisto > 0) return 'Em andamento';
+  if (percentualPrevisto === 100  && percentualRealizado <100 ) return 'Atrasado';
   
-  const atrasado = cronograma.some(item => {
+  
+  /*const atrasado = cronograma.some(item => {
     const fimPrevisto = new Date(item.fim);
     return fimPrevisto < hoje && item.percentualRealizado < 100;
-  });
+  });*/
   
-  return atrasado ? 'Atrasado' : 'Em Andamento';
+  //return atrasado ? 'Atrasado' : 'Em Andamento';
 };
 
 export const getStatusOrcamentoColor = (status: string): string => {
