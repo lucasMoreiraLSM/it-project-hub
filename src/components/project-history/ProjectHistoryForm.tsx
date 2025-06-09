@@ -42,13 +42,26 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
     const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
     const percentualRealizado = calculatePercentualRealizado(project.cronograma);
     
-    // Calculate total days from cronograma
-    const totalDias = project.cronograma.reduce((total, item) => {
+    // Calculate total days correctly - from earliest start to latest end date
+    let dataInicio: Date | null = null;
+    let dataFim: Date | null = null;
+    
+    project.cronograma.forEach(item => {
       const inicio = new Date(item.inicio);
       const fim = new Date(item.fim);
-      const dias = Math.ceil((fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
-      return total + dias;
-    }, 0);
+      
+      if (!dataInicio || inicio < dataInicio) {
+        dataInicio = inicio;
+      }
+      
+      if (!dataFim || fim > dataFim) {
+        dataFim = fim;
+      }
+    });
+    
+    const totalDias = dataInicio && dataFim 
+      ? Math.ceil((dataFim.getTime() - dataInicio.getTime()) / (1000 * 60 * 60 * 24)) + 1
+      : 0;
 
     return {
       percentual_previsto_total: percentualPrevisto,
