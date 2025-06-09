@@ -32,10 +32,10 @@ export const ProjectLeadersChart: React.FC<ProjectLeadersChartProps> = ({ data }
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={data} layout="horizontal">
+          <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" />
-            <YAxis dataKey="name" type="category" width={200} fontSize={12} />
+            <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} fontSize={12} />
+            <YAxis />
             <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="value" fill="#8B5CF6" />
           </BarChart>
