@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Project } from '@/types/project';
 import { BarChart, Trash2 } from 'lucide-react';
-import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getStatusProjeto, getStatusOrcamento, getStatusOrcamentoColor, getStatusGeral, getDataFimPrevista, getFarolStatus } from '@/utils/projectCalculations';
+import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getStatusGeral, getDataFimPrevista, getFarolStatus } from '@/utils/projectCalculations';
 
 interface ProjectTableRowProps {
   project: Project;
@@ -24,7 +24,6 @@ export const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
   const percentualRealizado = calculatePercentualRealizado(project.cronograma);
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
   const farol = getFarolStatus(desvio);
-  const statusOrcamento = getStatusOrcamento(project.cronograma);
   const statusGeral = getStatusGeral(project.cronograma);
   const dataFimPrevista = getDataFimPrevista(project.cronograma);
 
@@ -58,11 +57,6 @@ export const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
         <div className={`w-3 h-3 rounded-full ${getFarolColor(farol)} mx-auto`}></div>
       </TableCell>
       <TableCell className="text-center text-sm">{dataFimPrevista}</TableCell>
-      <TableCell className="text-center text-sm">
-        <span className={getStatusOrcamentoColor(statusOrcamento)}>
-          {statusOrcamento}
-        </span>
-      </TableCell>
       <TableCell className="text-sm max-w-[120px] truncate" title={project.areaNegocio}>
         {project.areaNegocio}
       </TableCell>

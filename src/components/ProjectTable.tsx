@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -37,7 +38,6 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                 <TableHead className="w-[80px] text-center">% Desv.</TableHead>
                 <TableHead className="w-[60px] text-center">Status</TableHead>
                 <TableHead className="w-[100px] text-center">Data Fim</TableHead>
-                <TableHead className="w-[90px] text-center">Status orçamento</TableHead>
                 <TableHead className="w-[120px] px-[25px]">Áreas</TableHead>
                 <TableHead className="w-[100px]">Time TI</TableHead>
                 <TableHead className="w-[120px]">Líder TI</TableHead>
