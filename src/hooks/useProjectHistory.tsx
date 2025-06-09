@@ -26,7 +26,13 @@ export const useProjectHistory = (projectId?: string) => {
 
       if (error) throw error;
 
-      setHistory(data || []);
+      // Transform the data to match our types
+      const transformedData: ProjectHistory[] = (data || []).map(item => ({
+        ...item,
+        farol: item.farol as 'Verde' | 'Amarelo' | 'Vermelho'
+      }));
+
+      setHistory(transformedData);
     } catch (error: any) {
       console.error('Erro ao carregar histórico:', error);
       toast({
@@ -39,7 +45,7 @@ export const useProjectHistory = (projectId?: string) => {
     }
   };
 
-  const createHistoryEntry = async (historyData: CreateProjectHistoryData) => {
+  const createHistoryEntry = async (historyData: CreateProjectHistoryData): Promise<void> => {
     try {
       if (!user) throw new Error('Usuário não autenticado');
 
@@ -61,8 +67,6 @@ export const useProjectHistory = (projectId?: string) => {
         title: "Sucesso",
         description: "Histórico criado com sucesso",
       });
-
-      return data;
     } catch (error: any) {
       console.error('Erro ao criar histórico:', error);
       toast({
@@ -76,7 +80,7 @@ export const useProjectHistory = (projectId?: string) => {
     }
   };
 
-  const updateHistoryEntry = async (id: string, historyData: Partial<CreateProjectHistoryData>) => {
+  const updateHistoryEntry = async (id: string, historyData: Partial<CreateProjectHistoryData>): Promise<void> => {
     try {
       const { error } = await supabase
         .from('project_history')
@@ -107,7 +111,7 @@ export const useProjectHistory = (projectId?: string) => {
     }
   };
 
-  const deleteHistoryEntry = async (id: string) => {
+  const deleteHistoryEntry = async (id: string): Promise<void> => {
     try {
       const { error } = await supabase
         .from('project_history')
