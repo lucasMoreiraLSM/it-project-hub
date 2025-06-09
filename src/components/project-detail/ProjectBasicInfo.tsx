@@ -1,9 +1,7 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectSectionProps } from './types';
 import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getFarolStatus, getDiasNaEtapa } from '@/utils/projectCalculations';
 import { SelectWithCustomInput } from './SelectWithCustomInput';
@@ -39,6 +37,42 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
     'Suporte',
     'Qualidade',
     'Arquitetura'
+  ]);
+
+  // Opções predefinidas para Tipo de Projeto
+  const [tiposProjeto, setTiposProjeto] = useState([
+    'Inovação',
+    'Melhoria'
+  ]);
+
+  // Opções predefinidas para Classificação do Projeto
+  const [classificacoesProjeto, setClassificacoesProjeto] = useState([
+    'Estratégico',
+    'Tático'
+  ]);
+
+  // Opções predefinidas para Gerente de Projetos
+  const [gerentesProjetos, setGerentesProjetos] = useState([
+    'Ana Silva',
+    'Carlos Santos',
+    'Maria Oliveira',
+    'João Pereira',
+    'Paula Costa',
+    'Ricardo Lima',
+    'Fernanda Souza',
+    'Eduardo Martins'
+  ]);
+
+  // Opções predefinidas para Líder Projetos TI
+  const [lideresProjetos, setLideresProjetos] = useState([
+    'Alexandre Tech',
+    'Beatriz Dev',
+    'Carlos Arch',
+    'Diana Ops',
+    'Eduardo Sec',
+    'Fabiana Data',
+    'Gabriel Cloud',
+    'Helena Mobile'
   ]);
 
   const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
@@ -95,35 +129,27 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
           </div>
           <div>
             <Label htmlFor="inovacaoMelhoria">Tipo de Projeto</Label>
-            <Select 
-              value={project.inovacaoMelhoria} 
-              onValueChange={(value: 'Inovação' | 'Melhoria') => onUpdate('inovacaoMelhoria', value)} 
+            <SelectWithCustomInput
+              id="inovacaoMelhoria"
+              value={project.inovacaoMelhoria}
+              onValueChange={(value) => onUpdate('inovacaoMelhoria', value as 'Inovação' | 'Melhoria')}
+              options={tiposProjeto}
+              onOptionsChange={setTiposProjeto}
+              placeholder="Selecione o tipo de projeto"
               disabled={!canEdit}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Inovação">Inovação</SelectItem>
-                <SelectItem value="Melhoria">Melhoria</SelectItem>
-              </SelectContent>
-            </Select>
+            />
           </div>
           <div>
             <Label htmlFor="estrategicoTatico">Classificação do Projeto</Label>
-            <Select 
-              value={project.estrategicoTatico} 
-              onValueChange={(value: 'Estratégico' | 'Tático') => onUpdate('estrategicoTatico', value)} 
+            <SelectWithCustomInput
+              id="estrategicoTatico"
+              value={project.estrategicoTatico}
+              onValueChange={(value) => onUpdate('estrategicoTatico', value as 'Estratégico' | 'Tático')}
+              options={classificacoesProjeto}
+              onOptionsChange={setClassificacoesProjeto}
+              placeholder="Selecione a classificação do projeto"
               disabled={!canEdit}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Estratégico">Estratégico</SelectItem>
-                <SelectItem value="Tático">Tático</SelectItem>
-              </SelectContent>
-            </Select>
+            />
           </div>
           <div className="md:col-span-2">
             <Label htmlFor="timeTI">Time Responsável</Label>

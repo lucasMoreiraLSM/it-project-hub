@@ -1,15 +1,40 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ProjectSectionProps } from './types';
+import { SelectWithCustomInput } from './SelectWithCustomInput';
 
 export const ProjectResponsibles: React.FC<ProjectSectionProps> = ({
   project,
   onUpdate,
   canEdit
 }) => {
+  // Opções predefinidas para Gerente de Projetos
+  const [gerentesProjetos, setGerentesProjetos] = useState([
+    'Ana Silva',
+    'Carlos Santos',
+    'Maria Oliveira',
+    'João Pereira',
+    'Paula Costa',
+    'Ricardo Lima',
+    'Fernanda Souza',
+    'Eduardo Martins'
+  ]);
+
+  // Opções predefinidas para Líder Projetos TI
+  const [lideresProjetos, setLideresProjetos] = useState([
+    'Alexandre Tech',
+    'Beatriz Dev',
+    'Carlos Arch',
+    'Diana Ops',
+    'Eduardo Sec',
+    'Fabiana Data',
+    'Gabriel Cloud',
+    'Helena Mobile'
+  ]);
+
   return (
     <Card>
       <CardHeader>
@@ -37,20 +62,26 @@ export const ProjectResponsibles: React.FC<ProjectSectionProps> = ({
           </div>
           <div>
             <Label htmlFor="gerenteProjetos">Gerente de Projetos</Label>
-            <Input 
-              id="gerenteProjetos" 
-              value={project.gerenteProjetos} 
-              onChange={e => onUpdate('gerenteProjetos', e.target.value)} 
-              disabled={!canEdit} 
+            <SelectWithCustomInput
+              id="gerenteProjetos"
+              value={project.gerenteProjetos}
+              onValueChange={(value) => onUpdate('gerenteProjetos', value)}
+              options={gerentesProjetos}
+              onOptionsChange={setGerentesProjetos}
+              placeholder="Selecione um gerente de projetos"
+              disabled={!canEdit}
             />
           </div>
           <div>
             <Label htmlFor="liderProjetosTI">Líder Projetos TI</Label>
-            <Input 
-              id="liderProjetosTI" 
-              value={project.liderProjetosTI} 
-              onChange={e => onUpdate('liderProjetosTI', e.target.value)} 
-              disabled={!canEdit} 
+            <SelectWithCustomInput
+              id="liderProjetosTI"
+              value={project.liderProjetosTI}
+              onValueChange={(value) => onUpdate('liderProjetosTI', value)}
+              options={lideresProjetos}
+              onOptionsChange={setLideresProjetos}
+              placeholder="Selecione um líder de projetos TI"
+              disabled={!canEdit}
             />
           </div>
         </div>
