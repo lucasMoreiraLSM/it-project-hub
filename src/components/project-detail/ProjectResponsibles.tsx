@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,30 +11,6 @@ export const ProjectResponsibles: React.FC<ProjectSectionProps> = ({
   onUpdate,
   canEdit
 }) => {
-  // Opções predefinidas para Gerente de Projetos
-  const [gerentesProjetos, setGerentesProjetos] = useState([
-    'Ana Silva',
-    'Carlos Santos',
-    'Maria Oliveira',
-    'João Pereira',
-    'Paula Costa',
-    'Ricardo Lima',
-    'Fernanda Souza',
-    'Eduardo Martins'
-  ]);
-
-  // Opções predefinidas para Líder Projetos TI
-  const [lideresProjetos, setLideresProjetos] = useState([
-    'Alexandre Tech',
-    'Beatriz Dev',
-    'Carlos Arch',
-    'Diana Ops',
-    'Eduardo Sec',
-    'Fabiana Data',
-    'Gabriel Cloud',
-    'Helena Mobile'
-  ]);
-
   return (
     <Card>
       <CardHeader>
@@ -66,8 +42,7 @@ export const ProjectResponsibles: React.FC<ProjectSectionProps> = ({
               id="gerenteProjetos"
               value={project.gerenteProjetos}
               onValueChange={(value) => onUpdate('gerenteProjetos', value)}
-              options={gerentesProjetos}
-              onOptionsChange={setGerentesProjetos}
+              fieldName="gerenteProjetos"
               placeholder="Selecione um gerente de projetos"
               disabled={!canEdit}
             />
@@ -78,8 +53,7 @@ export const ProjectResponsibles: React.FC<ProjectSectionProps> = ({
               id="liderProjetosTI"
               value={project.liderProjetosTI}
               onValueChange={(value) => onUpdate('liderProjetosTI', value)}
-              options={lideresProjetos}
-              onOptionsChange={setLideresProjetos}
+              fieldName="liderProjetosTI"
               placeholder="Selecione um líder de projetos TI"
               disabled={!canEdit}
             />

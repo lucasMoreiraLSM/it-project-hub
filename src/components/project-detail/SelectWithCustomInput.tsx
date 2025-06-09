@@ -4,12 +4,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
+import { useCustomFieldOptions } from '@/hooks/useCustomFieldOptions';
 
 interface SelectWithCustomInputProps {
   value: string;
   onValueChange: (value: string) => void;
-  options: string[];
-  onOptionsChange?: (options: string[]) => void;
+  fieldName: string;
   placeholder: string;
   disabled?: boolean;
   id?: string;
@@ -18,14 +18,14 @@ interface SelectWithCustomInputProps {
 export const SelectWithCustomInput: React.FC<SelectWithCustomInputProps> = ({
   value,
   onValueChange,
-  options,
-  onOptionsChange,
+  fieldName,
   placeholder,
   disabled = false,
   id
 }) => {
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [customValue, setCustomValue] = useState('');
+  const { options, loading, addOption, removeOption } = useCustomFieldOptions(fieldName);
 
   const handleSelectChange = (selectedValue: string) => {
     if (selectedValue === 'custom') {
@@ -36,18 +36,16 @@ export const SelectWithCustomInput: React.FC<SelectWithCustomInputProps> = ({
     }
   };
 
-  const handleCustomSubmit = () => {
+  const handleCustomSubmit = async () => {
     if (customValue.trim()) {
       const newValue = customValue.trim();
-      onValueChange(newValue);
+      const success = await addOption(newValue);
       
-      // Add to options list if it doesn't exist and onOptionsChange is provided
-      if (onOptionsChange && !options.includes(newValue)) {
-        onOptionsChange([...options, newValue]);
+      if (success) {
+        onValueChange(newValue);
+        setIsCustomMode(false);
+        setCustomValue('');
       }
-      
-      setIsCustomMode(false);
-      setCustomValue('');
     }
   };
 
@@ -56,20 +54,26 @@ export const SelectWithCustomInput: React.FC<SelectWithCustomInputProps> = ({
     setCustomValue('');
   };
 
-  const handleDeleteOption = (optionToDelete: string, event: React.MouseEvent) => {
+  const handleDeleteOption = async (optionToDelete: string, event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     
-    if (onOptionsChange) {
-      const updatedOptions = options.filter(option => option !== optionToDelete);
-      onOptionsChange(updatedOptions);
-      
-      // If the deleted option was selected, clear the selection
-      if (value === optionToDelete) {
-        onValueChange('');
-      }
+    const success = await removeOption(optionToDelete);
+    
+    if (success && value === optionToDelete) {
+      onValueChange('');
     }
   };
+
+  if (loading) {
+    return (
+      <Select disabled>
+        <SelectTrigger id={id}>
+          <SelectValue placeholder="Carregando..." />
+        </SelectTrigger>
+      </Select>
+    );
+  }
 
   if (isCustomMode) {
     return (
@@ -109,16 +113,14 @@ export const SelectWithCustomInput: React.FC<SelectWithCustomInputProps> = ({
             <SelectItem value={option} className="pr-8">
               {option}
             </SelectItem>
-            {onOptionsChange && (
-              <button
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-red-50 rounded transition-colors z-50"
-                onClick={(e) => handleDeleteOption(option, e)}
-                onMouseDown={(e) => e.preventDefault()}
-                type="button"
-              >
-                <X className="h-3 w-3 text-red-500 hover:text-red-700" />
-              </button>
-            )}
+            <button
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-red-50 rounded transition-colors z-50 opacity-0 group-hover:opacity-100"
+              onClick={(e) => handleDeleteOption(option, e)}
+              onMouseDown={(e) => e.preventDefault()}
+              type="button"
+            >
+              <X className="h-3 w-3 text-red-500 hover:text-red-700" />
+            </button>
           </div>
         ))}
         <SelectItem value="custom" className="font-medium text-blue-600">

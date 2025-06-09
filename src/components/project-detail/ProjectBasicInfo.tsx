@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,70 +12,6 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
   onUpdate,
   canEdit
 }) => {
-  // Opções predefinidas para Área de Negócio
-  const [areasNegocio, setAreasNegocio] = useState([
-    'Comercial',
-    'Financeiro',
-    'Operações',
-    'Recursos Humanos',
-    'Marketing',
-    'Tecnologia da Informação',
-    'Logística',
-    'Jurídico',
-    'Compliance',
-    'Atendimento ao Cliente'
-  ]);
-
-  // Opções predefinidas para Time Responsável
-  const [timesResponsaveis, setTimesResponsaveis] = useState([
-    'Projetos',
-    'Infraestrutura',
-    'Segurança',
-    'Sustentação',
-    'Desenvolvimento',
-    'Banco de Dados',
-    'Redes',
-    'Suporte',
-    'Qualidade',
-    'Arquitetura'
-  ]);
-
-  // Opções predefinidas para Tipo de Projeto
-  const [tiposProjeto, setTiposProjeto] = useState([
-    'Inovação',
-    'Melhoria'
-  ]);
-
-  // Opções predefinidas para Classificação do Projeto
-  const [classificacoesProjeto, setClassificacoesProjeto] = useState([
-    'Estratégico',
-    'Tático'
-  ]);
-
-  // Opções predefinidas para Gerente de Projetos
-  const [gerentesProjetos, setGerentesProjetos] = useState([
-    'Ana Silva',
-    'Carlos Santos',
-    'Maria Oliveira',
-    'João Pereira',
-    'Paula Costa',
-    'Ricardo Lima',
-    'Fernanda Souza',
-    'Eduardo Martins'
-  ]);
-
-  // Opções predefinidas para Líder Projetos TI
-  const [lideresProjetos, setLideresProjetos] = useState([
-    'Alexandre Tech',
-    'Beatriz Dev',
-    'Carlos Arch',
-    'Diana Ops',
-    'Eduardo Sec',
-    'Fabiana Data',
-    'Gabriel Cloud',
-    'Helena Mobile'
-  ]);
-
   const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
   const percentualRealizado = calculatePercentualRealizado(project.cronograma);
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
@@ -121,8 +58,7 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
               id="areaNegocio"
               value={project.areaNegocio}
               onValueChange={(value) => onUpdate('areaNegocio', value)}
-              options={areasNegocio}
-              onOptionsChange={setAreasNegocio}
+              fieldName="areaNegocio"
               placeholder="Selecione uma área de negócio"
               disabled={!canEdit}
             />
@@ -133,8 +69,7 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
               id="inovacaoMelhoria"
               value={project.inovacaoMelhoria}
               onValueChange={(value) => onUpdate('inovacaoMelhoria', value as 'Inovação' | 'Melhoria')}
-              options={tiposProjeto}
-              onOptionsChange={setTiposProjeto}
+              fieldName="inovacaoMelhoria"
               placeholder="Selecione o tipo de projeto"
               disabled={!canEdit}
             />
@@ -145,8 +80,7 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
               id="estrategicoTatico"
               value={project.estrategicoTatico}
               onValueChange={(value) => onUpdate('estrategicoTatico', value as 'Estratégico' | 'Tático')}
-              options={classificacoesProjeto}
-              onOptionsChange={setClassificacoesProjeto}
+              fieldName="estrategicoTatico"
               placeholder="Selecione a classificação do projeto"
               disabled={!canEdit}
             />
@@ -157,8 +91,7 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
               id="timeTI"
               value={project.timeTI}
               onValueChange={(value) => onUpdate('timeTI', value)}
-              options={timesResponsaveis}
-              onOptionsChange={setTimesResponsaveis}
+              fieldName="timeTI"
               placeholder="Selecione um time responsável"
               disabled={!canEdit}
             />
