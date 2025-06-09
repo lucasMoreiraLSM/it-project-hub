@@ -129,15 +129,17 @@ export const useCustomFieldOptions = (fieldName: string) => {
         return false;
       }
 
-      const { data, error } = await supabase
+      // Simplify the query to avoid deep type instantiation
+      const query = supabase
         .from('projetos')
         .select('id')
-        .eq(columnName, optionValue)
-        .limit(1);
+        .eq(columnName, optionValue);
+      
+      const { data, error } = await query.limit(1);
 
       if (error) throw error;
 
-      return data && data.length > 0;
+      return data !== null && data.length > 0;
     } catch (error) {
       console.error('Erro ao verificar uso da opção:', error);
       return true; // Em caso de erro, assumir que está em uso para segurança
