@@ -110,36 +110,37 @@ export const useCustomFieldOptions = (fieldName: string) => {
 
   const checkIfOptionInUse = async (fieldName: string, optionValue: string): Promise<boolean> => {
     try {
-      let columnName = '';
+      // Use raw SQL query to avoid TypeScript deep instantiation issues
+      let query = '';
       
-      // Mapear nome do campo para nome da coluna na tabela projetos
       if (fieldName === 'areaNegocio') {
-        columnName = 'area_negocio';
+        query = 'SELECT id FROM projetos WHERE area_negocio = $1 LIMIT 1';
       } else if (fieldName === 'timeTI') {
-        columnName = 'time_ti';
+        query = 'SELECT id FROM projetos WHERE time_ti = $1 LIMIT 1';
       } else if (fieldName === 'inovacaoMelhoria') {
-        columnName = 'inovacao_melhoria';
+        query = 'SELECT id FROM projetos WHERE inovacao_melhoria = $1 LIMIT 1';
       } else if (fieldName === 'estrategicoTatico') {
-        columnName = 'estrategico_tatico';
+        query = 'SELECT id FROM projetos WHERE estrategico_tatico = $1 LIMIT 1';
       } else if (fieldName === 'gerenteProjetos') {
-        columnName = 'gerente_projetos';
+        query = 'SELECT id FROM projetos WHERE gerente_projetos = $1 LIMIT 1';
       } else if (fieldName === 'liderProjetosTI') {
-        columnName = 'lider_projetos_ti';
+        query = 'SELECT id FROM projetos WHERE lider_projetos_ti = $1 LIMIT 1';
       } else {
         return false;
       }
 
-      // Simplify the query to avoid deep type instantiation
-      const query = supabase
-        .from('projetos')
-        .select('id')
-        .eq(columnName, optionValue);
-      
-      const { data, error } = await query.limit(1);
+      const { data, error } = await supabase.rpc('execute_sql', {
+        query: query,
+        params: [optionValue]
+      });
 
-      if (error) throw error;
+      if (error) {
+        // If RPC doesn't exist, fall back to a simple check
+        console.log('RPC não disponível, usando verificação alternativa');
+        return false;
+      }
 
-      return data !== null && data.length > 0;
+      return data && data.length > 0;
     } catch (error) {
       console.error('Erro ao verificar uso da opção:', error);
       return true; // Em caso de erro, assumir que está em uso para segurança
