@@ -110,37 +110,38 @@ export const useCustomFieldOptions = (fieldName: string) => {
 
   const checkIfOptionInUse = async (fieldName: string, optionValue: string): Promise<boolean> => {
     try {
-      // Use raw SQL query to avoid TypeScript deep instantiation issues
-      let query = '';
+      let columnName = '';
       
+      // Mapear nome do campo para nome da coluna na tabela projetos
       if (fieldName === 'areaNegocio') {
-        query = 'SELECT id FROM projetos WHERE area_negocio = $1 LIMIT 1';
+        columnName = 'area_negocio';
       } else if (fieldName === 'timeTI') {
-        query = 'SELECT id FROM projetos WHERE time_ti = $1 LIMIT 1';
+        columnName = 'time_ti';
       } else if (fieldName === 'inovacaoMelhoria') {
-        query = 'SELECT id FROM projetos WHERE inovacao_melhoria = $1 LIMIT 1';
+        columnName = 'inovacao_melhoria';
       } else if (fieldName === 'estrategicoTatico') {
-        query = 'SELECT id FROM projetos WHERE estrategico_tatico = $1 LIMIT 1';
+        columnName = 'estrategico_tatico';
       } else if (fieldName === 'gerenteProjetos') {
-        query = 'SELECT id FROM projetos WHERE gerente_projetos = $1 LIMIT 1';
+        columnName = 'gerente_projetos';
       } else if (fieldName === 'liderProjetosTI') {
-        query = 'SELECT id FROM projetos WHERE lider_projetos_ti = $1 LIMIT 1';
+        columnName = 'lider_projetos_ti';
       } else {
         return false;
       }
 
-      const { data, error } = await supabase.rpc('execute_sql', {
-        query: query,
-        params: [optionValue]
-      });
+      // Use a simple select with explicit typing
+      const { data, error } = await supabase
+        .from('projetos')
+        .select('id')
+        .eq(columnName as any, optionValue)
+        .limit(1);
 
       if (error) {
-        // If RPC doesn't exist, fall back to a simple check
-        console.log('RPC não disponível, usando verificação alternativa');
-        return false;
+        console.error('Erro ao verificar uso da opção:', error);
+        return true; // Em caso de erro, assumir que está em uso para segurança
       }
 
-      return data && data.length > 0;
+      return data !== null && data.length > 0;
     } catch (error) {
       console.error('Erro ao verificar uso da opção:', error);
       return true; // Em caso de erro, assumir que está em uso para segurança
