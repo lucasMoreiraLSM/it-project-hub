@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,34 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
   onUpdate,
   canEdit
 }) => {
+  // Opções predefinidas para Área de Negócio
+  const [areasNegocio, setAreasNegocio] = useState([
+    'Comercial',
+    'Financeiro',
+    'Operações',
+    'Recursos Humanos',
+    'Marketing',
+    'Tecnologia da Informação',
+    'Logística',
+    'Jurídico',
+    'Compliance',
+    'Atendimento ao Cliente'
+  ]);
+
+  // Opções predefinidas para Time Responsável
+  const [timesResponsaveis, setTimesResponsaveis] = useState([
+    'Projetos',
+    'Infraestrutura',
+    'Segurança',
+    'Sustentação',
+    'Desenvolvimento',
+    'Banco de Dados',
+    'Redes',
+    'Suporte',
+    'Qualidade',
+    'Arquitetura'
+  ]);
+
   const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
   const percentualRealizado = calculatePercentualRealizado(project.cronograma);
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
@@ -37,34 +65,6 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
     }
   };
 
-  // Opções predefinidas para Área de Negócio
-  const areasNegocio = [
-    'Comercial',
-    'Financeiro',
-    'Operações',
-    'Recursos Humanos',
-    'Marketing',
-    'Tecnologia da Informação',
-    'Logística',
-    'Jurídico',
-    'Compliance',
-    'Atendimento ao Cliente'
-  ];
-
-  // Opções predefinidas para Time Responsável
-  const timesResponsaveis = [
-    'Projetos',
-    'Infraestrutura',
-    'Segurança',
-    'Sustentação',
-    'Desenvolvimento',
-    'Banco de Dados',
-    'Redes',
-    'Suporte',
-    'Qualidade',
-    'Arquitetura'
-  ];
-
   return (
     <Card>
       <CardHeader>
@@ -88,6 +88,7 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
               value={project.areaNegocio}
               onValueChange={(value) => onUpdate('areaNegocio', value)}
               options={areasNegocio}
+              onOptionsChange={setAreasNegocio}
               placeholder="Selecione uma área de negócio"
               disabled={!canEdit}
             />
@@ -131,6 +132,7 @@ export const ProjectBasicInfo: React.FC<ProjectSectionProps> = ({
               value={project.timeTI}
               onValueChange={(value) => onUpdate('timeTI', value)}
               options={timesResponsaveis}
+              onOptionsChange={setTimesResponsaveis}
               placeholder="Selecione um time responsável"
               disabled={!canEdit}
             />

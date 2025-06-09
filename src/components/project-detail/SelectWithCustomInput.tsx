@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 
 interface SelectWithCustomInputProps {
   value: string;
   onValueChange: (value: string) => void;
   options: string[];
+  onOptionsChange?: (options: string[]) => void;
   placeholder: string;
   disabled?: boolean;
   id?: string;
@@ -18,6 +19,7 @@ export const SelectWithCustomInput: React.FC<SelectWithCustomInputProps> = ({
   value,
   onValueChange,
   options,
+  onOptionsChange,
   placeholder,
   disabled = false,
   id
@@ -36,7 +38,14 @@ export const SelectWithCustomInput: React.FC<SelectWithCustomInputProps> = ({
 
   const handleCustomSubmit = () => {
     if (customValue.trim()) {
-      onValueChange(customValue.trim());
+      const newValue = customValue.trim();
+      onValueChange(newValue);
+      
+      // Add to options list if it doesn't exist and onOptionsChange is provided
+      if (onOptionsChange && !options.includes(newValue)) {
+        onOptionsChange([...options, newValue]);
+      }
+      
       setIsCustomMode(false);
       setCustomValue('');
     }
@@ -45,6 +54,18 @@ export const SelectWithCustomInput: React.FC<SelectWithCustomInputProps> = ({
   const handleCustomCancel = () => {
     setIsCustomMode(false);
     setCustomValue('');
+  };
+
+  const handleDeleteOption = (optionToDelete: string) => {
+    if (onOptionsChange) {
+      const updatedOptions = options.filter(option => option !== optionToDelete);
+      onOptionsChange(updatedOptions);
+      
+      // If the deleted option was selected, clear the selection
+      if (value === optionToDelete) {
+        onValueChange('');
+      }
+    }
   };
 
   if (isCustomMode) {
@@ -81,8 +102,24 @@ export const SelectWithCustomInput: React.FC<SelectWithCustomInputProps> = ({
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (
-          <SelectItem key={option} value={option}>
-            {option}
+          <SelectItem key={option} value={option} className="group">
+            <div className="flex items-center justify-between w-full">
+              <span>{option}</span>
+              {onOptionsChange && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 ml-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDeleteOption(option);
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
           </SelectItem>
         ))}
         <SelectItem value="custom" className="font-medium text-blue-600">
