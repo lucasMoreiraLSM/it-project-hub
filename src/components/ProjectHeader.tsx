@@ -11,8 +11,8 @@ export const ProjectHeader = () => {
 
   return (
     <div className="border-b border-gray-200 px-6 py-4 bg-[#183989]">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="flex items-center gap-4">
+      <div className="flex justify-between items-center w-full">
+        <div className="flex items-center gap-2">
           <img 
             src="/lovable-uploads/6002a9d0-aa98-4ed0-8082-a7e6ec5fc014.png" 
             alt="Logo Araguaia"
