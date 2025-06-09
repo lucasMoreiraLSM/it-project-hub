@@ -88,9 +88,6 @@ export const ProjectHistoryView: React.FC<ProjectHistoryViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Charts Section */}
-      <ProjectHistoryCharts history={history} />
-      
       {/* History List */}
       <Card>
         <CardHeader>
@@ -171,6 +168,9 @@ export const ProjectHistoryView: React.FC<ProjectHistoryViewProps> = ({
           </div>
         </CardContent>
       </Card>
+      
+      {/* Charts Section */}
+      <ProjectHistoryCharts history={history} />
     </div>
   );
 };
