@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectLock, LockCheckResult } from '@/types/projectLock';
+import { SUPABASE_URL, SUPABASE_KEY, LOCK_DURATION } from './lockConstants';
 
 export const cleanupExpiredLocks = async (): Promise<void> => {
   try {
@@ -90,7 +91,7 @@ export const createProjectLock = async (
       user_id: userId,
       user_name: userEmail || 'Usuário Desconhecido',
       locked_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutos
+      expires_at: new Date(Date.now() + LOCK_DURATION).toISOString()
     };
 
     console.log('Dados do bloqueio a serem inseridos:', lockData);
@@ -155,7 +156,7 @@ export const renewProjectLock = async (lockId: string): Promise<boolean> => {
     const { error } = await supabase
       .from('project_locks')
       .update({
-        expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
+        expires_at: new Date(Date.now() + LOCK_DURATION).toISOString()
       })
       .eq('id', lockId);
 
@@ -181,9 +182,6 @@ export const releaseLockOnPageUnload = (lockId: string): void => {
   }
   
   try {
-    const SUPABASE_URL = "https://skdrkfwymmgssluhakwl.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZHJrZnd5bW1nc3NsdWhha3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4NDgwOTYsImV4cCI6MjA2MTQyNDA5Nn0.Hez1eKgXjBTQvY7qi3WxN5ZZDiGAdvTKathEeO0ZCb8";
-    
     fetch(`${SUPABASE_URL}/rest/v1/project_locks?id=eq.${lockId}`, {
       method: 'DELETE',
       headers: {
