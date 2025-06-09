@@ -91,9 +91,13 @@ export const getStatusGeral = (cronograma: CronogramaItem[]): string => {
   if (cronograma.length === 0) return 'Não Iniciado';
   
   const percentualRealizado = calculatePercentualRealizado(cronograma);
+  const percentualPrevisto  = calculatePercentualPrevisto(cronograma);
+  const desvio = percentualPrevisto - percentualRealizado;
   
-  if (percentualRealizado === 0) return 'Não Iniciado';
+  //if (percentualRealizado === 0 && percentualPrevisto === 0 ) return 'Não Iniciado';
+  if (desvio > 10 ) return 'Atrasado';
   if (percentualRealizado === 100) return 'Concluído';
+ 
   return 'Em Andamento';
 };
 
