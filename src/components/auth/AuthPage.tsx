@@ -67,9 +67,8 @@ export const AuthPage = () => {
         <CardHeader className="text-center pb-4 rounded-lg">
           <div className="flex flex-col items-center space-y-4">
             <img alt="Araguaia Logo" className="h-20 w-auto object-contain" src="/lovable-uploads/5b4f69cb-7e93-4a3d-b30a-93c20af85bea.png" />
-            
+            <img alt="IT Project Hub Logo" className="h-16 w-auto object-contain" src="/lovable-uploads/b83ec503-44e4-4e7f-befb-d3cee8aa6d32.png" />
           </div>
-          
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
