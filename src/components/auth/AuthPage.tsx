@@ -83,7 +83,7 @@ export const AuthPage = () => {
             </div>
             
             <div>
-              <Label htmlFor="password" className="text-gray-700">Senha</Label>
+              <Label htmlFor="password" className="text-gray-700">Senha:</Label>
               <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required className="mt-1" placeholder="Senha" />
             </div>
             
