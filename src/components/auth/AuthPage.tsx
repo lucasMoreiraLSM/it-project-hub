@@ -66,7 +66,7 @@ export const AuthPage = () => {
       <Card className="w-full max-w-md bg-white shadow-2xl">
         <CardHeader className="text-center pb-4 rounded-lg">
           <div className="flex flex-col items-center space-y-4">
-            <img alt="Araguaia Logo" src="/lovable-uploads/5b4f69cb-7e93-4a3d-b30a-93c20af85bea.png" className="h-14 w-auto object-contain" />
+            <img alt="Araguaia Logo" src="/lovable-uploads/5b4f69cb-7e93-4a3d-b30a-93c20af85bea.png" className="h-16 w-auto object-contain" />
             <img alt="IT Project Hub Logo" className="h-20 w-auto object-contain" src="/lovable-uploads/901232d4-9f08-4272-b559-b27d097e43a1.png" />
           </div>
         </CardHeader>
