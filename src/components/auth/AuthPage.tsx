@@ -73,9 +73,11 @@ export const AuthPage = () => {
               className="h-20 w-auto object-contain" 
               src="/lovable-uploads/5b4f69cb-7e93-4a3d-b30a-93c20af85bea.png" 
             />
-            <h1 className="text-2xl font-serif text-gray-800 tracking-wide">
-              IT Project HUB
-            </h1>
+            <img 
+              alt="IT Project HUB Logo" 
+              className="h-16 w-auto object-contain" 
+              src="/lovable-uploads/Logo It Projetct Hub.png" 
+            />
           </div>
           
         </CardHeader>
@@ -134,3 +136,5 @@ export const AuthPage = () => {
     </div>
   );
 };
+
+</initial_code>
