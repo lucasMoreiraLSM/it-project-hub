@@ -78,7 +78,7 @@ export const AuthPage = () => {
               </div>}
             
             <div>
-              <Label htmlFor="email" className="text-gray-700">Email</Label>
+              <Label htmlFor="email" className="text-gray-700">E-mail:</Label>
               <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required className="mt-1" placeholder="E-mail" />
             </div>
             
