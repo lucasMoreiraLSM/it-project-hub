@@ -10,14 +10,18 @@ interface ProjectHistoryChartsProps {
 }
 
 export const ProjectHistoryCharts: React.FC<ProjectHistoryChartsProps> = ({ history }) => {
+  const formatChartDate = (dateString: string) => {
+    // Parse the date string directly without creating a Date object to avoid timezone issues
+    const [year, month] = dateString.split('-');
+    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    return `${monthNames[parseInt(month) - 1]}/${year.slice(-2)}`;
+  };
+
   // Sort history by date and prepare chart data
   const chartData = history
     .sort((a, b) => new Date(a.data_atualizacao).getTime() - new Date(b.data_atualizacao).getTime())
     .map(entry => ({
-      mes: new Date(entry.data_atualizacao).toLocaleDateString('pt-BR', { 
-        month: 'short', 
-        year: '2-digit' 
-      }),
+      mes: formatChartDate(entry.data_atualizacao),
       previsto: entry.percentual_previsto_total,
       realizado: entry.percentual_realizado_total,
       desvio: entry.percentual_desvio

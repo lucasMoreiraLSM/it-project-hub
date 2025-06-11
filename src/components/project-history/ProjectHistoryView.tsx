@@ -44,6 +44,12 @@ export const ProjectHistoryView: React.FC<ProjectHistoryViewProps> = ({
     return <Minus className="h-4 w-4 text-gray-500" />;
   };
 
+  const formatDate = (dateString: string) => {
+    // Parse the date string directly without creating a Date object to avoid timezone issues
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`;
+  };
+
   const handleDelete = async (id: string) => {
     if (onDelete) {
       await onDelete(id);
@@ -103,7 +109,7 @@ export const ProjectHistoryView: React.FC<ProjectHistoryViewProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">
-                      {new Date(entry.data_atualizacao).toLocaleDateString('pt-BR')}
+                      {formatDate(entry.data_atualizacao)}
                     </span>
                     <Badge className={`${getFarolColor(entry.farol)} text-white`}>
                       {entry.farol}
