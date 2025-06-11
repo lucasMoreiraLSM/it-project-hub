@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,6 @@ import { CreateProjectHistoryData } from '@/types/projectHistory';
 import { Project } from '@/types/project';
 import { Plus } from 'lucide-react';
 import { 
-  calculatePercentualPrevisto, 
   calculatePercentualRealizado,
   calculateDesvio,
   getFarolStatus
@@ -21,6 +21,44 @@ interface ProjectHistoryFormProps {
   loading?: boolean;
 }
 
+// Function to calculate percentual previsto based on a specific date
+const calculatePercentualPrevistoForDate = (cronograma: any[], targetDate: string): number => {
+  if (cronograma.length === 0) return 0;
+  
+  const targetDateObj = new Date(targetDate);
+  // Normalize target date to start of day
+  const normalizedTargetDate = new Date(targetDateObj.toLocaleDateString('pt-BR').split('/').reverse().join('-'));
+  
+  const soma = cronograma.reduce((total, item) => {
+    const inicio = new Date(item.inicio);
+    const fim = new Date(item.fim);
+    
+    // Normalize dates to start of day
+    const dataInicioPadrao = new Date(inicio.toISOString().split('T')[0]);
+    const dataFimPadrao = new Date(fim.toISOString().split('T')[0]);
+    
+    // If target date is before start, percentual previsto is 0
+    if (normalizedTargetDate < dataInicioPadrao) return total + 0;
+    
+    // If target date is after end, percentual previsto is 100
+    if (normalizedTargetDate > dataFimPadrao) return total + 100;
+    
+    // Calculate percentual based on elapsed time
+    const totalDias = Math.floor((dataFimPadrao.getTime() - dataInicioPadrao.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const diasDecorridos = Math.floor((normalizedTargetDate.getTime() - dataInicioPadrao.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    
+    if (totalDias <= 0) return total + 100;
+    
+    // If we are exactly on the end date, consider 100%
+    if (normalizedTargetDate.getTime() === dataFimPadrao.getTime()) return total + 100;
+    
+    const percentual = Math.round((diasDecorridos / totalDias) * 100);
+    return total + Math.min(100, Math.max(0, percentual));
+  }, 0);
+  
+  return Math.round(soma / cronograma.length);
+};
+
 export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({ 
   projectId, 
   project,
@@ -28,7 +66,7 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
   loading = false 
 }) => {
   // Calculate current project data using the correct calculation functions
-  const calculateCurrentData = () => {
+  const calculateCurrentData = (targetDate?: string) => {
     if (!project?.cronograma || project.cronograma.length === 0) {
       return {
         percentual_previsto_total: 0,
@@ -37,8 +75,9 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
       };
     }
 
-    // Use the existing calculation functions from utils
-    const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
+    // Use the target date if provided, otherwise use current date
+    const dateToUse = targetDate || new Date().toISOString().split('T')[0];
+    const percentualPrevisto = calculatePercentualPrevistoForDate(project.cronograma, dateToUse);
     const percentualRealizado = calculatePercentualRealizado(project.cronograma);
     
     // Find the earliest start date from the schedule
@@ -67,9 +106,9 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
     return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
   };
 
-  const currentData = calculateCurrentData();
-  const initialDesvio = calculateDesvio(currentData.percentual_previsto_total, currentData.percentual_realizado_total);
   const currentDate = new Date().toISOString().split('T')[0];
+  const currentData = calculateCurrentData(currentDate);
+  const initialDesvio = calculateDesvio(currentData.percentual_previsto_total, currentData.percentual_realizado_total);
   const initialTotalDias = calculateTotalDias(currentDate, currentData.primeiraDataInicio);
 
   const [formData, setFormData] = useState<CreateProjectHistoryData>({
@@ -112,6 +151,17 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
       [field]: value
     }));
   };
+
+  // Recalculate percentual previsto when data_atualizacao changes
+  React.useEffect(() => {
+    if (project?.cronograma && formData.data_atualizacao) {
+      const newPercentualPrevisto = calculatePercentualPrevistoForDate(project.cronograma, formData.data_atualizacao);
+      setFormData(prev => ({
+        ...prev,
+        percentual_previsto_total: newPercentualPrevisto
+      }));
+    }
+  }, [formData.data_atualizacao, project?.cronograma]);
 
   // Calculate deviation automatically
   React.useEffect(() => {
@@ -180,6 +230,9 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
                 onChange={(e) => handleInputChange('percentual_previsto_total', parseFloat(e.target.value) || 0)}
                 required
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Calculado automaticamente com base na data de atualização, mas editável
+              </p>
             </div>
             <div>
               <Label htmlFor="percentual_realizado">Percentual Realizado (%)</Label>
