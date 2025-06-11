@@ -5,6 +5,11 @@ export const calculatePercentualPrevistoItem = (dataInicio: string, dataFim: str
   const inicio = new Date(dataInicio);
   const fim = new Date(dataFim);
   
+  // Normalizar as datas para considerar apenas o dia (sem horário)
+  hoje.setHours(23, 59, 59, 999);
+  inicio.setHours(0, 0, 0, 0);
+  fim.setHours(23, 59, 59, 999);
+  
   // Se não iniciou ainda, percentual previsto é 0
   if (hoje < inicio) return 0;
   
@@ -12,8 +17,8 @@ export const calculatePercentualPrevistoItem = (dataInicio: string, dataFim: str
   if (hoje > fim) return 100;
   
   // Calcular percentual baseado no tempo decorrido
-  const totalDias = Math.ceil((fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
-  const diasDecorridos = Math.ceil((hoje.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
+  const totalDias = Math.floor((fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const diasDecorridos = Math.floor((hoje.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24)) + 1;
   
   if (totalDias <= 0) return 100;
   
@@ -21,29 +26,7 @@ export const calculatePercentualPrevistoItem = (dataInicio: string, dataFim: str
   return Math.min(100, Math.max(0, percentual));
 };
 
-/*export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
-  if (cronograma.length === 0) return 0;
-  
-  // Calcular o percentual previsto total baseado na média ponderada por duração
-  let totalDias = 0;
-  let diasPrevistos = 0;
-  
-  cronograma.forEach(item => {
-    const inicio = new Date(item.inicio);
-    const fim = new Date(item.fim);
-    const duracaoItem = Math.ceil((fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (duracaoItem > 0) {
-      const percentualItem = calculatePercentualPrevistoItem(item.inicio, item.fim);
-      totalDias += duracaoItem;
-      diasPrevistos += (percentualItem / 100) * duracaoItem;
-    }
-  });
-  
-  return totalDias > 0 ? Math.round((diasPrevistos / totalDias) * 100) : 0;
-};*/
-
- export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
+export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0; 
    
    const soma = cronograma.reduce((total, item) => total + item.percentualPrevisto, 0);
