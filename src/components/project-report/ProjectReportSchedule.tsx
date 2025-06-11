@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Project } from '@/types/project';
-import { getDiasNaEtapa, getStatusCronograma, getStatusCronogramaStyle } from '@/utils/projectCalculations';
+import { getDiasNaEtapa, getStatusCronograma, getStatusCronogramaStyle, calculatePercentualPrevistoItem } from '@/utils/projectCalculations';
 
 interface ProjectReportScheduleProps {
   project: Project;
@@ -32,6 +32,12 @@ export const ProjectReportSchedule: React.FC<ProjectReportScheduleProps> = ({ pr
               {project.cronograma.map((item, index) => {
                 const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
                 const status = getStatusCronograma(item);
+                
+                // Calcular automaticamente o percentual previsto baseado nas datas
+                const percentualPrevistoCalculado = item.inicio && item.fim 
+                  ? calculatePercentualPrevistoItem(item.inicio, item.fim)
+                  : item.percentualPrevisto;
+                
                 return (
                   <tr key={index}>
                     <td className="border border-gray-200 p-2">{item.etapa}</td>
@@ -46,7 +52,7 @@ export const ProjectReportSchedule: React.FC<ProjectReportScheduleProps> = ({ pr
                         {status}
                       </span>
                     </td>
-                    <td className="border border-gray-200 p-2 text-center">{item.percentualPrevisto}%</td>
+                    <td className="border border-gray-200 p-2 text-center">{percentualPrevistoCalculado}%</td>
                     <td className="border border-gray-200 p-2 text-center">{item.percentualRealizado}%</td>
                     <td className="border border-gray-200 p-2 text-center">{diasNaEtapa}</td>
                   </tr>

@@ -1,27 +1,47 @@
-
 import { Project, CronogramaItem } from '@/types/project';
+
+export const calculatePercentualPrevistoItem = (dataInicio: string, dataFim: string): number => {
+  const hoje = new Date();
+  const inicio = new Date(dataInicio);
+  const fim = new Date(dataFim);
+  
+  // Se não iniciou ainda, percentual previsto é 0
+  if (hoje < inicio) return 0;
+  
+  // Se já passou da data fim, percentual previsto é 100
+  if (hoje > fim) return 100;
+  
+  // Calcular percentual baseado no tempo decorrido
+  const totalDias = Math.ceil((fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
+  const diasDecorridos = Math.ceil((hoje.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
+  
+  if (totalDias <= 0) return 100;
+  
+  const percentual = Math.round((diasDecorridos / totalDias) * 100);
+  return Math.min(100, Math.max(0, percentual));
+};
 
 export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0;
   
-  const totalDias = cronograma.reduce((total, item) => {
+  // Calcular o percentual previsto total baseado na média ponderada por duração
+  let totalDias = 0;
+  let diasPrevistos = 0;
+  
+  cronograma.forEach(item => {
     const inicio = new Date(item.inicio);
     const fim = new Date(item.fim);
-    const dias = Math.ceil((fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
-    return total + dias;
-  }, 0);
-
-  const diasPrevistosCompletados = cronograma.reduce((total, item) => {
-    const inicio = new Date(item.inicio);
-    const fim = new Date(item.fim);
-    const dias = Math.ceil((fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
-    const diasNaEtapa = getDiasNaEtapa(item.inicio, item.fim, item.percentualRealizado);
-    const diasParaCalcular = Math.min(diasNaEtapa, dias);
-    return total + diasParaCalcular;
-  }, 0);
-
-  return totalDias > 0 ? Math.round((diasPrevistosCompletados / totalDias) * 100) : 0;
-}; 
+    const duracaoItem = Math.ceil((fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (duracaoItem > 0) {
+      const percentualItem = calculatePercentualPrevistoItem(item.inicio, item.fim);
+      totalDias += duracaoItem;
+      diasPrevistos += (percentualItem / 100) * duracaoItem;
+    }
+  });
+  
+  return totalDias > 0 ? Math.round((diasPrevistos / totalDias) * 100) : 0;
+};
 
 /* export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0; 
