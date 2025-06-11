@@ -21,7 +21,7 @@ export const calculatePercentualPrevistoItem = (dataInicio: string, dataFim: str
   return Math.min(100, Math.max(0, percentual));
 };
 
-export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
+/*export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0;
   
   // Calcular o percentual previsto total baseado na média ponderada por duração
@@ -41,15 +41,15 @@ export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): numbe
   });
   
   return totalDias > 0 ? Math.round((diasPrevistos / totalDias) * 100) : 0;
-};
+};*/
 
-/* export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
+ export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0; 
    
    const soma = cronograma.reduce((total, item) => total + item.percentualPrevisto, 0);
    return Math.round(soma / cronograma.length);
    
-};*/
+};
 
 export const calculatePercentualRealizado = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0;
