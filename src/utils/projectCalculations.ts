@@ -1,3 +1,4 @@
+
 import { Project, CronogramaItem } from '@/types/project';
 
 export const calculatePercentualPrevistoItem = (dataInicio: string, dataFim: string): number => {
@@ -21,6 +22,9 @@ export const calculatePercentualPrevistoItem = (dataInicio: string, dataFim: str
   const diasDecorridos = Math.floor((hoje.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24)) + 1;
   
   if (totalDias <= 0) return 100;
+  
+  // Se estamos exatamente na data fim, consideramos 100%
+  if (hoje.toDateString() === fim.toDateString()) return 100;
   
   const percentual = Math.round((diasDecorridos / totalDias) * 100);
   return Math.min(100, Math.max(0, percentual));
