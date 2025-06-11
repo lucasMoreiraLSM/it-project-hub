@@ -74,13 +74,13 @@ export const getDiasNaEtapa = (dataInicio: string, dataFim?: string, percentualR
   if (percentualRealizado === 100 && dataFim) {
     const fim = new Date(dataFim);
     const diffTime = fim.getTime() - inicio.getTime();
-    return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+    return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
   }
   
   // Se percentual realizado é menor que 100%, calcular entre início e data atual
   const hoje = new Date();
   const diffTime = hoje.getTime() - inicio.getTime();
-  return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+  return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
 };
 
 export const getStatusCronograma = (item: CronogramaItem): string => {
