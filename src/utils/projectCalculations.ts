@@ -1,7 +1,7 @@
 
 import { Project, CronogramaItem } from '@/types/project';
 
-/*export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
+export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0;
   
   const totalDias = cronograma.reduce((total, item) => {
@@ -21,14 +21,15 @@ import { Project, CronogramaItem } from '@/types/project';
   }, 0);
 
   return totalDias > 0 ? Math.round((diasPrevistosCompletados / totalDias) * 100) : 0;
-}; */
-export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
+}; 
+
+/* export const calculatePercentualPrevisto = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0; 
    
    const soma = cronograma.reduce((total, item) => total + item.percentualPrevisto, 0);
    return Math.round(soma / cronograma.length);
    
-};
+};*/
 
 export const calculatePercentualRealizado = (cronograma: CronogramaItem[]): number => {
   if (cronograma.length === 0) return 0;
