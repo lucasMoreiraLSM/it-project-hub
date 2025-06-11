@@ -49,12 +49,15 @@ export const useProjectHistory = (projectId?: string) => {
     try {
       if (!user) throw new Error('Usuário não autenticado');
 
+      // Ensure the date is saved exactly as provided, without timezone conversion
+      const dataAtualizacao = historyData.data_atualizacao || new Date().toISOString().split('T')[0];
+      
       const { data, error } = await supabase
         .from('project_history')
         .insert({
           ...historyData,
           user_id: user.id,
-          data_atualizacao: historyData.data_atualizacao || new Date().toISOString().split('T')[0]
+          data_atualizacao: dataAtualizacao
         })
         .select()
         .single();
