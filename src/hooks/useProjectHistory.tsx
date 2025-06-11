@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectHistory, CreateProjectHistoryData } from '@/types/projectHistory';
@@ -49,13 +48,20 @@ export const useProjectHistory = (projectId?: string) => {
     try {
       if (!user) throw new Error('Usuário não autenticado');
 
-      // Ensure the date is saved exactly as provided, without timezone conversion
+      // Get the date string and ensure it's saved exactly as provided
       const dataAtualizacao = historyData.data_atualizacao || new Date().toISOString().split('T')[0];
+      
+      console.log('Data sendo salva:', dataAtualizacao);
       
       const { data, error } = await supabase
         .from('project_history')
         .insert({
-          ...historyData,
+          project_id: historyData.project_id,
+          percentual_previsto_total: historyData.percentual_previsto_total,
+          percentual_realizado_total: historyData.percentual_realizado_total,
+          percentual_desvio: historyData.percentual_desvio,
+          total_dias: historyData.total_dias,
+          farol: historyData.farol,
           user_id: user.id,
           data_atualizacao: dataAtualizacao
         })
@@ -63,6 +69,8 @@ export const useProjectHistory = (projectId?: string) => {
         .single();
 
       if (error) throw error;
+
+      console.log('Histórico salvo com sucesso:', data);
 
       await fetchHistory(historyData.project_id);
       

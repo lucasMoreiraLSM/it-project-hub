@@ -41,13 +41,10 @@ export const ProjectHistoryForm: React.FC<ProjectHistoryFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Ensure the date is in the correct format (YYYY-MM-DD) without timezone issues
-      const dataToSubmit = {
-        ...formData,
-        data_atualizacao: formData.data_atualizacao
-      };
+      console.log('Data do formulário antes de enviar:', formData.data_atualizacao);
       
-      await onSubmit(dataToSubmit);
+      // Send exactly the data as it is, without any transformation
+      await onSubmit(formData);
       
       // Reset form with current project data
       const newCurrentDate = new Date().toISOString().split('T')[0];
