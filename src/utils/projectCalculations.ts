@@ -1,4 +1,3 @@
-
 import { Project, CronogramaItem } from '@/types/project';
 
 export const calculatePercentualPrevistoItem = (dataInicio: string, dataFim: string): number => {
@@ -6,25 +5,26 @@ export const calculatePercentualPrevistoItem = (dataInicio: string, dataFim: str
   const inicio = new Date(dataInicio);
   const fim = new Date(dataFim);
   
-  // Normalizar as datas para considerar apenas o dia (sem horário)
-  hoje.setHours(23, 59, 59, 999);
-  inicio.setHours(0, 0, 0, 0);
-  fim.setHours(23, 59, 59, 999);
+  // Normalizar todas as datas para considerar apenas o dia (sem horário)
+  // Usar a mesma lógica da coluna "Dia Atual" que mostra hoje.toLocaleDateString('pt-BR')
+  const dataHoje = new Date(hoje.toLocaleDateString('pt-BR').split('/').reverse().join('-'));
+  const dataInicioPadrao = new Date(inicio.toISOString().split('T')[0]);
+  const dataFimPadrao = new Date(fim.toISOString().split('T')[0]);
   
   // Se não iniciou ainda, percentual previsto é 0
-  if (hoje < inicio) return 0;
+  if (dataHoje < dataInicioPadrao) return 0;
   
   // Se já passou da data fim, percentual previsto é 100
-  if (hoje > fim) return 100;
+  if (dataHoje > dataFimPadrao) return 100;
   
   // Calcular percentual baseado no tempo decorrido
-  const totalDias = Math.floor((fim.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-  const diasDecorridos = Math.floor((hoje.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const totalDias = Math.floor((dataFimPadrao.getTime() - dataInicioPadrao.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const diasDecorridos = Math.floor((dataHoje.getTime() - dataInicioPadrao.getTime()) / (1000 * 60 * 60 * 24)) + 1;
   
   if (totalDias <= 0) return 100;
   
   // Se estamos exatamente na data fim, consideramos 100%
-  if (hoje.toDateString() === fim.toDateString()) return 100;
+  if (dataHoje.getTime() === dataFimPadrao.getTime()) return 100;
   
   const percentual = Math.round((diasDecorridos / totalDias) * 100);
   return Math.min(100, Math.max(0, percentual));
