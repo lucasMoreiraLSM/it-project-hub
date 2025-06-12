@@ -62,14 +62,14 @@ export const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#183989] via-[#1e4496] to-[#2a5cb3]">
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary via-primary/90 to-primary/80">
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.05\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"2\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
       
       <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm shadow-2xl border-0 relative z-10 animate-fade-in">
         <CardHeader className="text-center pb-6 pt-8">
           <div className="flex flex-col items-center space-y-6">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#183989] to-[#2a5cb3] rounded-full blur-lg opacity-20 scale-110"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 rounded-full blur-lg opacity-20 scale-110"></div>
               <img 
                 alt="Araguaia Logo" 
                 src="/lovable-uploads/5b4f69cb-7e93-4a3d-b30a-93c20af85bea.png" 
@@ -107,7 +107,7 @@ export const AuthPage = () => {
                     value={nome}
                     onChange={(e) => setNome(e.target.value)}
                     required={!isLogin}
-                    className="pl-10 h-12 border-gray-200 focus:border-[#183989] focus:ring-[#183989] transition-colors"
+                    className="pl-10 h-12 border-gray-200 focus:border-primary focus:ring-primary transition-colors"
                     placeholder="Digite seu nome completo"
                   />
                 </div>
@@ -126,7 +126,7 @@ export const AuthPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="pl-10 h-12 border-gray-200 focus:border-[#183989] focus:ring-[#183989] transition-colors"
+                  className="pl-10 h-12 border-gray-200 focus:border-primary focus:ring-primary transition-colors"
                   placeholder="Digite seu e-mail"
                 />
               </div>
@@ -144,7 +144,7 @@ export const AuthPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="pl-10 pr-10 h-12 border-gray-200 focus:border-[#183989] focus:ring-[#183989] transition-colors"
+                  className="pl-10 pr-10 h-12 border-gray-200 focus:border-primary focus:ring-primary transition-colors"
                   placeholder="Digite sua senha"
                 />
                 <button
@@ -163,8 +163,7 @@ export const AuthPage = () => {
                   type="button"
                   variant="link"
                   onClick={() => setShowForgotPassword(true)}
-                  className="text-sm p-0 h-auto font-medium hover:underline"
-                  style={{ color: '#183989' }}
+                  className="text-sm p-0 h-auto font-medium hover:underline text-primary"
                 >
                   Esqueci minha senha
                 </Button>
@@ -173,8 +172,7 @@ export const AuthPage = () => {
             
             <Button
               type="submit"
-              className="w-full h-12 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] disabled:transform-none"
-              style={{ backgroundColor: '#183989' }}
+              className="w-full h-12 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] disabled:transform-none bg-primary hover:bg-primary/90"
               disabled={loading}
             >
               <div className="flex items-center justify-center space-x-2">
@@ -199,8 +197,7 @@ export const AuthPage = () => {
             <Button
               variant="link"
               onClick={() => setIsLogin(!isLogin)}
-              className="mt-4 text-sm font-medium hover:underline"
-              style={{ color: '#183989' }}
+              className="mt-4 text-sm font-medium hover:underline text-primary"
             >
               {isLogin ? 'Não tem conta? Criar uma nova' : 'Já tem conta? Fazer login'}
             </Button>
