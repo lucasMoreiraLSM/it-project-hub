@@ -79,6 +79,17 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
       return;
     }
 
+    // Check if user already exists in the local list
+    const existingUser = users.find(user => user.email.toLowerCase() === newUserEmail.toLowerCase());
+    if (existingUser) {
+      toast({
+        title: "Erro",
+        description: "Um usuário com este email já existe no sistema",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setInviting(true);
     try {
       const { data, error } = await supabase.functions.invoke('admin-tasks', {
@@ -92,11 +103,18 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro na chamada da edge function:', error);
+        throw new Error('Falha na comunicação com o servidor');
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
 
       toast({
         title: "Sucesso",
-        description: "Convite enviado com sucesso!",
+        description: "Convite enviado com sucesso! O usuário receberá um email com instruções para acessar o sistema.",
       });
 
       setNewUserEmail('');
@@ -105,9 +123,19 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
       await fetchUsers();
     } catch (error: any) {
       console.error('Erro ao convidar usuário:', error);
+      let errorMessage = "Erro ao enviar convite";
+      
+      if (error.message?.includes('já está registrado') || error.message?.includes('already been registered')) {
+        errorMessage = "Um usuário com este email já está registrado no sistema";
+      } else if (error.message?.includes('Falha na comunicação')) {
+        errorMessage = "Erro de comunicação com o servidor. Tente novamente.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Erro",
-        description: error.message || "Erro ao enviar convite",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -150,7 +178,14 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro na chamada da edge function:', error);
+        throw new Error('Falha na comunicação com o servidor');
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
 
       toast({
         title: "Sucesso",
@@ -160,9 +195,17 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
       await fetchUsers();
     } catch (error: any) {
       console.error('Erro ao excluir usuário:', error);
+      let errorMessage = "Erro ao excluir usuário";
+      
+      if (error.message?.includes('Falha na comunicação')) {
+        errorMessage = "Erro de comunicação com o servidor. Tente novamente.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Erro",
-        description: error.message || "Erro ao excluir usuário",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

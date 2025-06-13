@@ -26,18 +26,62 @@ serve(async (req) => {
 
     if (action === 'invite_user') {
       if (!email || !user_metadata) {
-        throw new Error('Email e metadados são obrigatórios para convite')
+        return new Response(
+          JSON.stringify({ 
+            error: 'Email e metadados são obrigatórios para convite',
+            code: 'missing_fields'
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          }
+        )
+      }
+
+      // Check if user already exists
+      const { data: existingUser } = await supabaseAdmin.auth.admin.getUserByEmail(email)
+      
+      if (existingUser.user) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Um usuário com este email já está registrado no sistema',
+            code: 'email_exists'
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 409,
+          }
+        )
       }
 
       // Invite user using admin API
       const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
         data: user_metadata,
-        redirectTo: `${req.headers.get('origin') || 'http://localhost:3000'}/`
+        redirectTo: `${req.headers.get('origin') || 'https://it-project-hub.lovable.app'}/`
       })
 
       if (error) {
         console.error('Erro ao convidar usuário:', error)
-        throw error
+        
+        let errorMessage = 'Erro ao enviar convite'
+        let errorCode = 'invite_failed'
+        
+        if (error.message?.includes('email_exists') || error.message?.includes('already been registered')) {
+          errorMessage = 'Um usuário com este email já está registrado no sistema'
+          errorCode = 'email_exists'
+        }
+        
+        return new Response(
+          JSON.stringify({ 
+            error: errorMessage,
+            code: errorCode,
+            details: error.message
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 422,
+          }
+        )
       }
 
       console.log('Usuário convidado com sucesso:', data)
@@ -53,7 +97,16 @@ serve(async (req) => {
 
     if (action === 'delete_user') {
       if (!user_id) {
-        throw new Error('ID do usuário é obrigatório para exclusão')
+        return new Response(
+          JSON.stringify({ 
+            error: 'ID do usuário é obrigatório para exclusão',
+            code: 'missing_user_id'
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          }
+        )
       }
 
       // First, delete from profiles table
@@ -64,7 +117,17 @@ serve(async (req) => {
 
       if (profileError) {
         console.error('Erro ao excluir perfil:', profileError)
-        throw profileError
+        return new Response(
+          JSON.stringify({ 
+            error: 'Erro ao excluir perfil do usuário',
+            code: 'profile_delete_failed',
+            details: profileError.message
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500,
+          }
+        )
       }
 
       // Then delete from auth
@@ -72,7 +135,17 @@ serve(async (req) => {
 
       if (error) {
         console.error('Erro ao excluir usuário do auth:', error)
-        throw error
+        return new Response(
+          JSON.stringify({ 
+            error: 'Erro ao excluir usuário do sistema de autenticação',
+            code: 'auth_delete_failed',
+            details: error.message
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500,
+          }
+        )
       }
 
       console.log('Usuário excluído com sucesso:', data)
@@ -86,7 +159,16 @@ serve(async (req) => {
       )
     }
 
-    throw new Error(`Ação não suportada: ${action}`)
+    return new Response(
+      JSON.stringify({ 
+        error: `Ação não suportada: ${action}`,
+        code: 'unsupported_action'
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      }
+    )
 
   } catch (error) {
     console.error('Erro na edge function:', error)
@@ -94,11 +176,12 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message || 'Erro interno do servidor',
+        code: 'internal_error',
         details: error
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 500,
       }
     )
   }
