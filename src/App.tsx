@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects } from '@/hooks/useProjects';
@@ -94,7 +93,7 @@ const App: React.FC = () => {
         return <ProjectDashboard projects={projects} onBack={handleBack} />;
       
       case 'users':
-        return canManageUsers ? <UserManagement /> : null;
+        return canManageUsers ? <UserManagement onBack={handleBack} /> : null;
       
       case 'overview':
       default:

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ProjectOverview } from '@/components/ProjectOverview';
 import { ProjectDetail } from '@/components/ProjectDetail';
@@ -126,7 +125,7 @@ const Index = () => {
     return (
       <div>
         <ProjectHeader />
-        <UserManagement />
+        <UserManagement onBack={handleBack} />
       </div>
     );
   }

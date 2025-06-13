@@ -7,9 +7,20 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { UserPlus, Users, Mail } from 'lucide-react';
+import { UserPlus, Users, Mail, ArrowLeft, Trash2 } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -19,13 +30,18 @@ interface UserProfile {
   created_at: string;
 }
 
-export const UserManagement: React.FC = () => {
+interface UserManagementProps {
+  onBack?: () => void;
+}
+
+export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserName, setNewUserName] = useState('');
   const [newUserProfile, setNewUserProfile] = useState<'administrador' | 'gerencia' | 'colaborador'>('colaborador');
   const [inviting, setInviting] = useState(false);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchUsers = async () => {
@@ -121,6 +137,40 @@ export const UserManagement: React.FC = () => {
     }
   };
 
+  const deleteUser = async (userId: string) => {
+    setDeletingUserId(userId);
+    try {
+      // Primeiro, remover o perfil
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (profileError) throw profileError;
+
+      // Em seguida, remover o usuário do auth (requer privilégios de admin)
+      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+
+      if (authError) throw authError;
+
+      toast({
+        title: "Sucesso",
+        description: "Usuário excluído com sucesso!",
+      });
+
+      await fetchUsers();
+    } catch (error: any) {
+      console.error('Erro ao excluir usuário:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao excluir usuário",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
+
   const getProfileBadgeVariant = (profile: string) => {
     switch (profile) {
       case 'administrador':
@@ -145,9 +195,17 @@ export const UserManagement: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center gap-3 mb-6">
-          <Users className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Usuários</h1>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Users className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Usuários</h1>
+          </div>
+          {onBack && (
+            <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Voltar
+            </Button>
+          )}
         </div>
 
         {/* Convidar novo usuário */}
@@ -216,6 +274,7 @@ export const UserManagement: React.FC = () => {
                   <TableHead>Perfil Atual</TableHead>
                   <TableHead>Data de Criação</TableHead>
                   <TableHead>Alterar Perfil</TableHead>
+                  <TableHead>Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -246,6 +305,38 @@ export const UserManagement: React.FC = () => {
                           <SelectItem value="administrador">Administrador</SelectItem>
                         </SelectContent>
                       </Select>
+                    </TableCell>
+                    <TableCell>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            disabled={deletingUserId === user.id}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir o usuário <strong>{user.nome || user.email}</strong>? 
+                              Esta ação não pode ser desfeita e todos os dados do usuário serão removidos permanentemente.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteUser(user.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Excluir Usuário
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
