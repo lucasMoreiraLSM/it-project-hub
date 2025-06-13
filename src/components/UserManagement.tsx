@@ -81,12 +81,15 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
 
     setInviting(true);
     try {
-      const { error } = await supabase.auth.admin.inviteUserByEmail(newUserEmail, {
-        data: {
-          nome: newUserName,
-          perfil: newUserProfile
-        },
-        redirectTo: `${window.location.origin}/`
+      const { data, error } = await supabase.functions.invoke('admin-tasks', {
+        body: {
+          action: 'invite_user',
+          email: newUserEmail,
+          user_metadata: {
+            nome: newUserName,
+            perfil: newUserProfile
+          }
+        }
       });
 
       if (error) throw error;
@@ -140,18 +143,14 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
   const deleteUser = async (userId: string) => {
     setDeletingUserId(userId);
     try {
-      // Primeiro, remover o perfil
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
+      const { data, error } = await supabase.functions.invoke('admin-tasks', {
+        body: {
+          action: 'delete_user',
+          user_id: userId
+        }
+      });
 
-      if (profileError) throw profileError;
-
-      // Em seguida, remover o usuário do auth (requer privilégios de admin)
-      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
-
-      if (authError) throw authError;
+      if (error) throw error;
 
       toast({
         title: "Sucesso",
