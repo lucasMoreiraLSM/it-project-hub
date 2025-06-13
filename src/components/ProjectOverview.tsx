@@ -7,7 +7,8 @@ import { Filters } from '@/types/filters';
 import { ProjectFilters } from './ProjectFilters';
 import { ProjectTable } from './ProjectTable';
 import { getFilterOptions, filterProjects, hasActiveFilters, clearFilters } from '@/utils/filterUtils';
-import { PieChart, Filter, Plus, RefreshCw } from 'lucide-react';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { PieChart, Filter, Plus, RefreshCw, Users } from 'lucide-react';
 
 interface ProjectOverviewProps {
   projects: Project[];
@@ -18,6 +19,7 @@ interface ProjectOverviewProps {
   onCreateProject: () => void;
   onDeleteProject: (projectId: string) => void;
   onRefreshProjects: () => void;
+  onShowUserManagement: () => void;
   loading: boolean;
 }
 
@@ -29,10 +31,12 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   onCreateProject,
   onDeleteProject,
   onRefreshProjects,
+  onShowUserManagement,
   loading
 }) => {
   const [filters, setFilters] = useState<Filters>(clearFilters());
   const [showFilters, setShowFilters] = useState(false);
+  const { canManageUsers } = useUserPermissions();
 
   const filterOptions = useMemo(() => getFilterOptions(projects), [projects]);
   const filteredProjects = useMemo(() => filterProjects(projects, filters), [projects, filters]);
@@ -90,6 +94,16 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               <RefreshCw className="h-4 w-4" />
               Atualizar
             </Button>
+            {canManageUsers && (
+              <Button 
+                onClick={onShowUserManagement} 
+                variant="outline" 
+                className="flex items-center gap-2"
+              >
+                <Users className="h-4 w-4" />
+                Usuários
+              </Button>
+            )}
             <Button 
               onClick={onShowDashboard} 
               variant="outline" 

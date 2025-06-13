@@ -39,6 +39,7 @@ export type Database = {
           email: string | null
           id: string
           nome: string | null
+          perfil: Database["public"]["Enums"]["user_profile"]
           updated_at: string | null
         }
         Insert: {
@@ -46,6 +47,7 @@ export type Database = {
           email?: string | null
           id: string
           nome?: string | null
+          perfil?: Database["public"]["Enums"]["user_profile"]
           updated_at?: string | null
         }
         Update: {
@@ -53,6 +55,7 @@ export type Database = {
           email?: string | null
           id?: string
           nome?: string | null
+          perfil?: Database["public"]["Enums"]["user_profile"]
           updated_at?: string | null
         }
         Relationships: []
@@ -138,15 +141,18 @@ export type Database = {
         Row: {
           area_negocio: string | null
           created_at: string | null
+          created_by_user_id: string | null
           cronograma: Json | null
           escopo: Json | null
           estrategico_tatico: string | null
           etapas_executadas: Json | null
           gerente_projetos: string | null
+          gerente_projetos_user_id: string | null
           id: string
           inovacao_melhoria: string | null
           last_updated_at: string | null
           last_updated_by_name: string | null
+          lider_projeto_user_id: string | null
           lider_projetos_ti: string | null
           nome: string
           objetivos: Json | null
@@ -161,15 +167,18 @@ export type Database = {
         Insert: {
           area_negocio?: string | null
           created_at?: string | null
+          created_by_user_id?: string | null
           cronograma?: Json | null
           escopo?: Json | null
           estrategico_tatico?: string | null
           etapas_executadas?: Json | null
           gerente_projetos?: string | null
+          gerente_projetos_user_id?: string | null
           id?: string
           inovacao_melhoria?: string | null
           last_updated_at?: string | null
           last_updated_by_name?: string | null
+          lider_projeto_user_id?: string | null
           lider_projetos_ti?: string | null
           nome: string
           objetivos?: Json | null
@@ -184,15 +193,18 @@ export type Database = {
         Update: {
           area_negocio?: string | null
           created_at?: string | null
+          created_by_user_id?: string | null
           cronograma?: Json | null
           escopo?: Json | null
           estrategico_tatico?: string | null
           etapas_executadas?: Json | null
           gerente_projetos?: string | null
+          gerente_projetos_user_id?: string | null
           id?: string
           inovacao_melhoria?: string | null
           last_updated_at?: string | null
           last_updated_by_name?: string | null
+          lider_projeto_user_id?: string | null
           lider_projetos_ti?: string | null
           nome?: string
           objetivos?: Json | null
@@ -211,13 +223,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_delete_project: {
+        Args: { project_id: string; user_id: string }
+        Returns: boolean
+      }
+      can_edit_project: {
+        Args: { project_id: string; user_id: string }
+        Returns: boolean
+      }
       cleanup_expired_locks: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_user_profile: {
+        Args: { user_id: string }
+        Returns: Database["public"]["Enums"]["user_profile"]
+      }
     }
     Enums: {
-      [_ in never]: never
+      user_profile: "administrador" | "gerencia" | "colaborador"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -332,6 +356,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_profile: ["administrador", "gerencia", "colaborador"],
+    },
   },
 } as const

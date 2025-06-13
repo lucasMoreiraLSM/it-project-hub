@@ -65,6 +65,13 @@ export const useProjects = () => {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) throw new Error('Usuário não autenticado');
 
+      // Buscar o perfil do usuário para determinar se pode ser líder
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('perfil')
+        .eq('id', currentUser.id)
+        .single();
+
       const { data, error } = await supabase
         .from('projetos')
         .insert({
@@ -84,6 +91,8 @@ export const useProjects = () => {
           pontos_atencao: project.pontosAtencao as any,
           estrategico_tatico: project.estrategicoTatico,
           user_id: currentUser.id,
+          created_by_user_id: currentUser.id,
+          lider_projeto_user_id: currentUser.id, // O criador automaticamente se torna líder
           last_updated_by_name: currentUser.email || 'Usuário Desconhecido',
           last_updated_at: new Date().toISOString()
         })
@@ -146,6 +155,24 @@ export const useProjects = () => {
 
   const deleteProject = async (projectId: string) => {
     try {
+      // Verificar se o usuário tem permissão para excluir
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { data: canDelete, error: permissionError } = await supabase.rpc('can_delete_project', {
+        project_id: projectId,
+        user_id: user.id
+      });
+
+      if (permissionError) throw permissionError;
+      if (!canDelete) {
+        toast({
+          title: "Erro",
+          description: "Você não tem permissão para excluir este projeto",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('projetos')
         .delete()

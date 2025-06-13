@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Project } from '@/types/project';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { BarChart, Trash2 } from 'lucide-react';
 import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getStatusGeral, getDataFimPrevista, getFarolStatus } from '@/utils/projectCalculations';
 
@@ -20,6 +21,8 @@ export const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
   onShowReport,
   onDeleteProject
 }) => {
+  const { canDeleteProjects } = useUserPermissions();
+  
   const percentualPrevisto = calculatePercentualPrevisto(project.cronograma);
   const percentualRealizado = calculatePercentualRealizado(project.cronograma);
   const desvio = calculateDesvio(percentualPrevisto, percentualRealizado);
@@ -40,7 +43,8 @@ export const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
     }
   };
 
-  return <TableRow className="cursor-pointer hover:bg-muted/50" onClick={() => onSelectProject(project)}>
+  return (
+    <TableRow className="cursor-pointer hover:bg-muted/50" onClick={() => onSelectProject(project)}>
       <TableCell className="font-medium text-blue-600 hover:text-blue-800 max-w-[200px] truncate">
         <div className="truncate" title={project.nome}>
           {project.nome}
@@ -86,10 +90,13 @@ export const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
             <BarChart className="h-3 w-3 mr-1" />
             Report
           </Button>
-          <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 text-red-600 hover:text-red-700" onClick={e => onDeleteProject(project.id, e)}>
-            <Trash2 className="h-3 w-3" />
-          </Button>
+          {canDeleteProjects && (
+            <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 text-red-600 hover:text-red-700" onClick={e => onDeleteProject(project.id, e)}>
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          )}
         </div>
       </TableCell>
-    </TableRow>;
+    </TableRow>
+  );
 };
