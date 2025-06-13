@@ -38,22 +38,6 @@ serve(async (req) => {
         )
       }
 
-      // Check if user already exists
-      const { data: existingUser } = await supabaseAdmin.auth.admin.getUserByEmail(email)
-      
-      if (existingUser.user) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Um usuário com este email já está registrado no sistema',
-            code: 'email_exists'
-          }),
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 409,
-          }
-        )
-      }
-
       // Invite user using admin API
       const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
         data: user_metadata,
