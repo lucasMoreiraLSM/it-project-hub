@@ -4,17 +4,20 @@ import { ProjectOverview } from '@/components/ProjectOverview';
 import { ProjectDetail } from '@/components/ProjectDetail';
 import { ProjectReport } from '@/components/ProjectReport';
 import { ProjectDashboard } from '@/components/ProjectDashboard';
+import { UserManagement } from '@/components/UserManagement';
 import { ProjectHeader } from '@/components/ProjectHeader';
 import { AuthPage } from '@/components/auth/AuthPage';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects } from '@/hooks/useProjects';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { Project } from '@/types/project';
 
-type ViewMode = 'overview' | 'detail' | 'report' | 'dashboard';
+type ViewMode = 'overview' | 'detail' | 'report' | 'dashboard' | 'users';
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const { projects, loading: projectsLoading, createProject, updateProject, deleteProject, refetch } = useProjects();
+  const { canManageUsers } = useUserPermissions();
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
 
@@ -42,6 +45,12 @@ const Index = () => {
 
   const handleShowDashboard = () => {
     setViewMode('dashboard');
+  };
+
+  const handleShowUserManagement = () => {
+    if (canManageUsers) {
+      setViewMode('users');
+    }
   };
 
   const handleBack = () => {
@@ -113,6 +122,15 @@ const Index = () => {
     );
   }
 
+  if (viewMode === 'users') {
+    return (
+      <div>
+        <ProjectHeader />
+        <UserManagement />
+      </div>
+    );
+  }
+
   return (
     <div>
       <ProjectHeader />
@@ -125,6 +143,7 @@ const Index = () => {
         onCreateProject={handleCreateProject}
         onDeleteProject={deleteProject}
         onRefreshProjects={refetch}
+        onShowUserManagement={handleShowUserManagement}
         loading={projectsLoading}
       />
     </div>
