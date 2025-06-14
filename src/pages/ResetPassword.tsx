@@ -73,11 +73,18 @@ const ResetPassword = () => {
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.updateUser({
+      const { data, error } = await supabase.auth.updateUser({
         password: password
       });
       
       if (error) throw error;
+      
+      if (data.user) {
+        await supabase
+          .from('profiles')
+          .update({ password_set: true })
+          .eq('id', data.user.id);
+      }
       
       toast({
         title: "Sucesso",

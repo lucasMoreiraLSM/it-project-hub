@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects } from '@/hooks/useProjects';
@@ -15,6 +14,7 @@ import { Project } from '@/types/project';
 import { Toaster } from '@/components/ui/toaster';
 import ResetPassword from '@/pages/ResetPassword';
 import AcceptInvite from '@/pages/AcceptInvite';
+import { SetPasswordModal } from '@/components/auth/SetPasswordModal';
 
 type AppView = 'overview' | 'detail' | 'report' | 'dashboard' | 'users' | 'create';
 
@@ -114,7 +114,24 @@ const MainApp: React.FC = () => {
 };
 
 const ProtectedRoute: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
+
+  useEffect(() => {
+    if (user && !loading && user.profile?.password_set === false) {
+      setShowSetPasswordModal(true);
+    }
+  }, [user, loading]);
+
+  const handlePasswordSet = () => {
+    setShowSetPasswordModal(false);
+    // After success, useAuth will eventually update, or a page reload will fix the state.
+  };
+
+  const handleModalClose = () => {
+    // If user closes modal without setting password, log them out to enforce the rule.
+    signOut();
+  };
 
   if (loading) {
     return (
@@ -128,7 +145,16 @@ const ProtectedRoute: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  return <MainApp />;
+  return (
+    <>
+      <MainApp />
+      <SetPasswordModal 
+        isOpen={showSetPasswordModal}
+        onClose={handleModalClose}
+        onSuccess={handlePasswordSet}
+      />
+    </>
+  );
 };
 
 const App: React.FC = () => {
