@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { LogOut, User, Settings } from 'lucide-react';
@@ -19,7 +20,7 @@ export const ProjectHeader = () => {
         {user && <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <User className="h-4 w-4 bg-slate-50 px-0 py-0 my-0 rounded-full" />
-              <span className="text-slate-50">{user.email}</span>
+              <span className="text-slate-50">{user.profile?.nome || user.email}</span>
             </div>
             
             <Button variant="outline" size="sm" onClick={() => setShowUserProfile(true)} className="flex items-center gap-2">

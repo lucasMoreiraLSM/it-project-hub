@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 export interface AuthUser extends User {
   profile?: {
     password_set: boolean;
+    nome?: string | null;
   };
 }
 
@@ -25,7 +25,7 @@ export const useAuth = () => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('password_set')
+          .select('password_set, nome')
           .eq('id', userToFetch.id)
           .single();
         
