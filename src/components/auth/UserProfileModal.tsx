@@ -30,7 +30,7 @@ export const UserProfileModal = ({ isOpen, onClose }: UserProfileModalProps) => 
       setFormData(prev => ({
         ...prev,
         email: user.email || '',
-        nome: user.user_metadata?.nome || ''
+        nome: user.profile?.nome || ''
       }));
     }
   }, [user, isOpen]);
@@ -93,6 +93,16 @@ export const UserProfileModal = ({ isOpen, onClose }: UserProfileModalProps) => 
       });
       
       if (updateError) throw updateError;
+
+      // Atualizar nome na tabela de perfis
+      if (user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ nome: formData.nome, updated_at: new Date().toISOString() })
+          .eq('id', user.id);
+          
+        if (profileError) throw profileError;
+      }
 
       // Atualizar e-mail se mudou
       if (formData.email !== user?.email) {
