@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -47,8 +46,7 @@ const ProtectedRoute: React.FC = () => {
     setCurrentView('detail');
   };
 
-  const handleShowReport = (project: Project, event: React.MouseEvent) => {
-    event.stopPropagation();
+  const handleShowReport = (project: Project) => {
     setSelectedProject(project);
     setCurrentView('report');
   };
