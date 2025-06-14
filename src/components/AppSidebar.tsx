@@ -28,8 +28,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 }) => {
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="p-2 hidden md:flex items-center justify-end group-data-[state=expanded]:border-b">
-        <SidebarTrigger variant="outline" />
+      <SidebarHeader className="p-2 hidden md:flex items-center group-data-[state=expanded]:border-b">
+        <SidebarTrigger variant="outline" className="ml-auto" />
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
