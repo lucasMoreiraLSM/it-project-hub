@@ -1,9 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { Project, EtapaExecutada } from '@/types/project';
 import { useProjectLock } from '@/hooks/useProjectLock';
 import { useProjectHistory } from '@/hooks/useProjectHistory';
-import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 interface UseProjectDetailLogicProps {
   project: Project;
@@ -16,9 +14,6 @@ export const useProjectDetailLogic = ({ project, onUpdate, onBack }: UseProjectD
     ...project
   });
   const [isEditMode, setIsEditMode] = useState(false);
-  const [canEdit, setCanEdit] = useState(false);
-  
-  const { canEditProject } = useUserPermissions();
   
   const { 
     isLocked, 
@@ -36,22 +31,7 @@ export const useProjectDetailLogic = ({ project, onUpdate, onBack }: UseProjectD
     deleteHistoryEntry
   } = useProjectHistory(project.id);
 
-  // Verificar se o usuário pode editar este projeto
-  useEffect(() => {
-    const checkEditPermission = async () => {
-      const hasPermission = await canEditProject(project.id);
-      setCanEdit(hasPermission);
-    };
-
-    checkEditPermission();
-  }, [project.id, canEditProject]);
-
   const handleEditClick = async () => {
-    if (!canEdit) {
-      console.log('Usuário não tem permissão para editar este projeto');
-      return;
-    }
-
     if (isEditMode) {
       console.log('Parando edição, liberando bloqueio...');
       const success = await releaseLock();
@@ -150,7 +130,6 @@ export const useProjectDetailLogic = ({ project, onUpdate, onBack }: UseProjectD
     lockInfo,
     isOwnLock,
     isLoading,
-    canEdit,
     history,
     historyLoading,
     handleEditClick,
