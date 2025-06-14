@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { UserPlus, Users, Mail, ArrowLeft, Trash2 } from 'lucide-react';
+import { UserPlus, Users, Mail, ArrowLeft, Trash2, AlertTriangle } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -41,6 +41,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
   const [newUserProfile, setNewUserProfile] = useState<'administrador' | 'gerencia' | 'colaborador'>('colaborador');
   const [inviting, setInviting] = useState(false);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [userDependencies, setUserDependencies] = useState<{[key: string]: { projects: number, isCreator: boolean, isLeader: boolean, isManager: boolean }} | null>(null);
   const { toast } = useToast();
 
   const fetchUsers = async () => {
@@ -61,6 +62,33 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkUserDependencies = async (userId: string) => {
+    try {
+      // Check for projects where user is involved
+      const [createdProjects, leaderProjects, managerProjects] = await Promise.all([
+        supabase.from('projetos').select('id, nome').eq('created_by_user_id', userId),
+        supabase.from('projetos').select('id, nome').eq('lider_projeto_user_id', userId),
+        supabase.from('projetos').select('id, nome').eq('gerente_projetos_user_id', userId)
+      ]);
+
+      const totalProjects = new Set([
+        ...(createdProjects.data || []).map(p => p.id),
+        ...(leaderProjects.data || []).map(p => p.id),
+        ...(managerProjects.data || []).map(p => p.id)
+      ]).size;
+
+      return {
+        projects: totalProjects,
+        isCreator: (createdProjects.data || []).length > 0,
+        isLeader: (leaderProjects.data || []).length > 0,
+        isManager: (managerProjects.data || []).length > 0
+      };
+    } catch (error) {
+      console.error('Erro ao verificar dependências do usuário:', error);
+      return { projects: 0, isCreator: false, isLeader: false, isManager: false };
     }
   };
 
@@ -167,7 +195,12 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
     }
   };
 
-  const deleteUser = async (userId: string) => {
+  const handleDeleteUser = async (userId: string) => {
+    const dependencies = await checkUserDependencies(userId);
+    setUserDependencies({[userId]: dependencies});
+  };
+
+  const confirmDeleteUser = async (userId: string) => {
     setDeletingUserId(userId);
     try {
       const { data, error } = await supabase.functions.invoke('admin-tasks', {
@@ -188,10 +221,11 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
 
       toast({
         title: "Sucesso",
-        description: "Usuário excluído com sucesso!",
+        description: data.message || "Usuário excluído com sucesso!",
       });
 
       await fetchUsers();
+      setUserDependencies(null);
     } catch (error: any) {
       console.error('Erro ao excluir usuário:', error);
       let errorMessage = "Erro ao excluir usuário";
@@ -210,6 +244,19 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
     } finally {
       setDeletingUserId(null);
     }
+  };
+
+  const getDependenciesMessage = (dependencies: { projects: number, isCreator: boolean, isLeader: boolean, isManager: boolean }) => {
+    const roles = [];
+    if (dependencies.isCreator) roles.push('criador');
+    if (dependencies.isLeader) roles.push('líder');
+    if (dependencies.isManager) roles.push('gerente');
+
+    if (dependencies.projects === 0) {
+      return "Este usuário não possui projetos associados.";
+    }
+
+    return `Este usuário está associado a ${dependencies.projects} projeto(s) como ${roles.join(', ')}. Todas as associações serão removidas automaticamente.`;
   };
 
   const getProfileBadgeVariant = (profile: string) => {
@@ -348,32 +395,51 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onBack }) => {
                       </Select>
                     </TableCell>
                     <TableCell>
-                      <AlertDialog>
+                      <AlertDialog 
+                        open={userDependencies && userDependencies[user.id] !== undefined} 
+                        onOpenChange={(open) => !open && setUserDependencies(null)}
+                      >
                         <AlertDialogTrigger asChild>
                           <Button 
                             variant="outline" 
                             size="sm" 
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
                             disabled={deletingUserId === user.id}
+                            onClick={() => handleDeleteUser(user.id)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Tem certeza que deseja excluir o usuário <strong>{user.nome || user.email}</strong>? 
-                              Esta ação não pode ser desfeita e todos os dados do usuário serão removidos permanentemente.
+                            <AlertDialogTitle className="flex items-center gap-2">
+                              <AlertTriangle className="h-5 w-5 text-amber-500" />
+                              Confirmar exclusão
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="space-y-3">
+                              <p>
+                                Tem certeza que deseja excluir o usuário <strong>{user.nome || user.email}</strong>?
+                              </p>
+                              {userDependencies && userDependencies[user.id] && (
+                                <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+                                  <p className="text-sm text-amber-800">
+                                    <strong>Aviso:</strong> {getDependenciesMessage(userDependencies[user.id])}
+                                  </p>
+                                </div>
+                              )}
+                              <p className="text-sm text-gray-600">
+                                Esta ação não pode ser desfeita e todos os dados do usuário serão removidos permanentemente.
+                              </p>
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => deleteUser(user.id)}
+                              onClick={() => confirmDeleteUser(user.id)}
                               className="bg-red-600 hover:bg-red-700"
+                              disabled={deletingUserId === user.id}
                             >
-                              Excluir Usuário
+                              {deletingUserId === user.id ? 'Excluindo...' : 'Excluir Usuário'}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
