@@ -9,11 +9,12 @@ import {
   SidebarHeader,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, Users } from 'lucide-react';
+import { Home, LayoutDashboard, Users } from 'lucide-react';
 
 type AppView = 'overview' | 'detail' | 'report' | 'dashboard' | 'users';
 
 interface AppSidebarProps {
+  onShowOverview: () => void;
   onShowDashboard: () => void;
   onShowUserManagement: () => void;
   canManageUsers: boolean;
@@ -21,6 +22,7 @@ interface AppSidebarProps {
 }
 
 export const AppSidebar: React.FC<AppSidebarProps> = ({
+  onShowOverview,
   onShowDashboard,
   onShowUserManagement,
   canManageUsers,
@@ -33,6 +35,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={onShowOverview} isActive={['overview', 'detail', 'report'].includes(currentView)} tooltip="Início">
+              <Home />
+              <span>Início</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={onShowDashboard} isActive={currentView === 'dashboard'} tooltip="Dashboard">
               <LayoutDashboard />

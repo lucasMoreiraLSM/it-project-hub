@@ -47,12 +47,13 @@ const ProtectedRoute: React.FC = () => {
     setCurrentView('detail');
   };
 
-  const handleShowReport = (project: Project) => {
+  const handleShowReport = (project: Project, event: React.MouseEvent) => {
+    event.stopPropagation();
     setSelectedProject(project);
     setCurrentView('report');
   };
 
-  const handleBack = () => {
+  const handleShowOverview = () => {
     setSelectedProject(null);
     setCurrentView('overview');
   };
@@ -110,7 +111,7 @@ const ProtectedRoute: React.FC = () => {
         return selectedProject ? (
           <ProjectDetail
             project={selectedProject}
-            onBack={handleBack}
+            onBack={handleShowOverview}
             onUpdate={handleUpdateProject}
           />
         ) : null;
@@ -119,15 +120,15 @@ const ProtectedRoute: React.FC = () => {
         return selectedProject ? (
           <ProjectReport
             project={selectedProject}
-            onBack={handleBack}
+            onBack={handleShowOverview}
           />
         ) : null;
       
       case 'dashboard':
-        return <ProjectDashboard projects={projects} onBack={handleBack} />;
+        return <ProjectDashboard projects={projects} onBack={handleShowOverview} />;
       
       case 'users':
-        return canManageUsers ? <UserManagement onBack={handleBack} /> : null;
+        return canManageUsers ? <UserManagement onBack={handleShowOverview} /> : null;
       
       case 'overview':
       default:
@@ -165,6 +166,7 @@ const ProtectedRoute: React.FC = () => {
           <ProjectHeader />
           <div className="flex flex-1 relative overflow-hidden">
             <AppSidebar
+              onShowOverview={handleShowOverview}
               onShowDashboard={handleShowDashboard}
               onShowUserManagement={handleShowUserManagement}
               canManageUsers={canManageUsers}
