@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,23 +12,33 @@ const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Verificar se há parâmetros de redefinição de senha na URL
-    const accessToken = searchParams.get('access_token');
-    const refreshToken = searchParams.get('refresh_token');
-    
+    const params = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+
     if (accessToken && refreshToken) {
-      // Definir a sessão com os tokens da URL
       supabase.auth.setSession({
         access_token: accessToken,
-        refresh_token: refreshToken
+        refresh_token: refreshToken,
+      }).then(({ error }) => {
+        if (error) {
+          toast({
+            title: 'Erro',
+            description: 'O link de convite ou recuperação é inválido ou expirou.',
+            variant: 'destructive',
+          });
+          navigate('/');
+        } else {
+          // Limpa o hash da URL para evitar problemas ao recarregar a página
+          navigate('/reset-password', { replace: true });
+        }
       });
     }
-  }, [searchParams]);
+  }, [navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +81,7 @@ const ResetPassword = () => {
       
       toast({
         title: "Sucesso",
-        description: "Senha redefinida com sucesso!"
+        description: "Senha definida com sucesso! Você será redirecionado."
       });
       
       // Redirecionar para a página inicial após sucesso
@@ -98,7 +108,7 @@ const ResetPassword = () => {
               src="/lovable-uploads/5b4f69cb-7e93-4a3d-b30a-93c20af85bea.png" 
             />
             <CardTitle className="text-2xl font-serif text-gray-800 tracking-wide">
-              Redefinir Senha
+              Definir Senha
             </CardTitle>
           </div>
         </CardHeader>
@@ -136,7 +146,7 @@ const ResetPassword = () => {
               style={{ backgroundColor: '#183989' }}
               disabled={loading}
             >
-              {loading ? 'Redefinindo...' : 'Redefinir Senha'}
+              {loading ? 'Definindo...' : 'Definir Senha'}
             </Button>
           </form>
           

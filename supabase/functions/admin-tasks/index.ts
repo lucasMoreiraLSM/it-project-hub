@@ -41,7 +41,7 @@ serve(async (req) => {
       // Invite user using admin API
       const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
         data: user_metadata,
-        redirectTo: `${req.headers.get('origin') || 'https://it-project-hub.lovable.app'}/`
+        redirectTo: `${req.headers.get('origin') || 'https://it-project-hub.lovable.app'}/reset-password`
       })
 
       if (error) {
