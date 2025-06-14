@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -223,6 +222,40 @@ serve(async (req) => {
           )
         }
         console.log('Projetos gerenciados atualizados com sucesso')
+      }
+
+      // Check for dependencies on the old user_id column
+      const { data: legacyProjects, error: legacyProjectsError } = await supabaseAdmin
+        .from('projetos')
+        .select('id, nome')
+        .eq('user_id', user_id)
+
+      if (legacyProjectsError) {
+        console.error('Erro ao verificar projetos com user_id legado:', legacyProjectsError)
+      } else if (legacyProjects && legacyProjects.length > 0) {
+        console.log(`Usuário tem referência legada em ${legacyProjects.length} projeto(s):`, legacyProjects.map(p => p.nome))
+        
+        // Update projects to remove user reference
+        const { error: updateLegacyError } = await supabaseAdmin
+          .from('projetos')
+          .update({ user_id: null })
+          .eq('user_id', user_id)
+
+        if (updateLegacyError) {
+          console.error('Erro ao atualizar user_id legado dos projetos:', updateLegacyError)
+          return new Response(
+            JSON.stringify({ 
+              error: 'Erro ao atualizar referência legada dos projetos do usuário',
+              code: 'update_legacy_projects_failed',
+              details: updateLegacyError.message
+            }),
+            {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 500,
+            }
+          )
+        }
+        console.log('Referências legadas de projetos atualizadas com sucesso')
       }
 
       // Clean up project locks
