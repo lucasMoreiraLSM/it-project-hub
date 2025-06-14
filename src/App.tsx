@@ -1,4 +1,6 @@
+
 import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects } from '@/hooks/useProjects';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
@@ -11,28 +13,17 @@ import { AuthPage } from '@/components/auth/AuthPage';
 import { ProjectHeader } from '@/components/ProjectHeader';
 import { Project } from '@/types/project';
 import { Toaster } from '@/components/ui/toaster';
+import ResetPassword from '@/pages/ResetPassword';
+import AcceptInvite from '@/pages/AcceptInvite';
 
 type AppView = 'overview' | 'detail' | 'report' | 'dashboard' | 'users' | 'create';
 
-const App: React.FC = () => {
-  const { user, loading: authLoading } = useAuth();
+const MainApp: React.FC = () => {
   const { projects, loading: projectsLoading, createProject, updateProject, deleteProject, refetch } = useProjects();
   const { canManageUsers } = useUserPermissions();
   
   const [currentView, setCurrentView] = useState<AppView>('overview');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Carregando...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <AuthPage />;
-  }
 
   const handleSelectProject = (project: Project) => {
     setSelectedProject(project);
@@ -118,8 +109,39 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <ProjectHeader />
       {renderCurrentView()}
-      <Toaster />
     </div>
+  );
+};
+
+const ProtectedRoute: React.FC = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <MainApp />;
+};
+
+const App: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<AuthPage />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/accept-invite" element={<AcceptInvite />} />
+        <Route path="/*" element={<ProtectedRoute />} />
+      </Routes>
+      <Toaster />
+    </BrowserRouter>
   );
 };
 
