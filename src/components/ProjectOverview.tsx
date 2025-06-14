@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,9 +48,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
 
   const deleteProject = (projectId: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    if (confirm('Tem certeza que deseja excluir este projeto?')) {
-      onDeleteProject(projectId);
-    }
+    onDeleteProject(projectId);
   };
 
   const showReport = (project: Project, event: React.MouseEvent) => {

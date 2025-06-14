@@ -7,6 +7,17 @@ import { Project } from '@/types/project';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { BarChart, Trash2 } from 'lucide-react';
 import { calculatePercentualPrevisto, calculatePercentualRealizado, calculateDesvio, getStatusGeral, getDataFimPrevista, getFarolStatus } from '@/utils/projectCalculations';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface ProjectTableRowProps {
   project: Project;
@@ -91,9 +102,30 @@ export const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
             Report
           </Button>
           {canDeleteProjects && (
-            <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 text-red-600 hover:text-red-700" onClick={e => onDeleteProject(project.id, e)}>
-              <Trash2 className="h-3 w-3" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 text-red-600 hover:text-red-700" onClick={e => e.stopPropagation()}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent onClick={e => e.stopPropagation()}>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Você tem certeza absoluta?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Essa ação não pode ser desfeita. Isso excluirá permanentemente o projeto e removerá seus dados de nossos servidores.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={(e) => onDeleteProject(project.id, e)}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Excluir
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </TableCell>
