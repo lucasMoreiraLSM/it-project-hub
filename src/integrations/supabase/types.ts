@@ -39,6 +39,7 @@ export type Database = {
           email: string | null
           id: string
           nome: string | null
+          password_set: boolean
           perfil: Database["public"]["Enums"]["user_profile"]
           updated_at: string | null
         }
@@ -47,6 +48,7 @@ export type Database = {
           email?: string | null
           id: string
           nome?: string | null
+          password_set?: boolean
           perfil?: Database["public"]["Enums"]["user_profile"]
           updated_at?: string | null
         }
@@ -55,6 +57,7 @@ export type Database = {
           email?: string | null
           id?: string
           nome?: string | null
+          password_set?: boolean
           perfil?: Database["public"]["Enums"]["user_profile"]
           updated_at?: string | null
         }

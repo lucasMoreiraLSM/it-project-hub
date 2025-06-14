@@ -99,12 +99,13 @@ const AcceptInvite = () => {
     
     try {
       // 1. Inicia a sessão com os tokens do link
-      const { error: sessionError } = await supabase.auth.setSession({
+      const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken,
       });
       
       if (sessionError) throw new Error('Falha ao autenticar. O link pode ter expirado.');
+      if (!sessionData.user) throw new Error('Usuário não encontrado na sessão.');
       
       // 2. Com o usuário autenticado, atualiza a senha e o nome
       const { error: updateError } = await supabase.auth.updateUser({
@@ -113,6 +114,16 @@ const AcceptInvite = () => {
       });
       
       if (updateError) throw updateError;
+      
+      // 3. Atualiza o perfil para marcar que a senha foi definida
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ password_set: true, nome: nome })
+        .eq('id', sessionData.user.id);
+        
+      if (profileError) {
+        console.error("Falha ao atualizar o perfil do usuário:", profileError);
+      }
       
       toast({
         title: "Sucesso",

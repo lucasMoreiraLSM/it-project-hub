@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
+import { SetPasswordModal } from './SetPasswordModal';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 
 export const AuthPage = () => {
@@ -19,15 +20,25 @@ export const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
     if (user && !authLoading) {
-      navigate('/', { replace: true });
+      if (user.profile?.password_set === true) {
+        navigate('/', { replace: true });
+      } else if (user.profile?.password_set === false) {
+        setShowSetPasswordModal(true);
+      }
     }
   }, [user, authLoading, navigate]);
+
+  const handlePasswordSet = () => {
+    setShowSetPasswordModal(false);
+    navigate('/', { replace: true });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,5 +173,10 @@ export const AuthPage = () => {
       </Card>
 
       <ForgotPasswordModal isOpen={showForgotPassword} onClose={() => setShowForgotPassword(false)} />
+      <SetPasswordModal 
+        isOpen={showSetPasswordModal}
+        onClose={() => setShowSetPasswordModal(false)}
+        onSuccess={handlePasswordSet}
+      />
     </div>;
 };
