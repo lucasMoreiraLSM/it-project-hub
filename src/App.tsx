@@ -15,12 +15,14 @@ import { Toaster } from '@/components/ui/toaster';
 import ResetPassword from '@/pages/ResetPassword';
 import AcceptInvite from '@/pages/AcceptInvite';
 import { SetPasswordModal } from '@/components/auth/SetPasswordModal';
+import { useToast } from '@/hooks/use-toast';
 
-type AppView = 'overview' | 'detail' | 'report' | 'dashboard' | 'users' | 'create';
+type AppView = 'overview' | 'detail' | 'report' | 'dashboard' | 'users';
 
 const MainApp: React.FC = () => {
   const { projects, loading: projectsLoading, createProject, updateProject, deleteProject, refetch } = useProjects();
   const { canManageUsers } = useUserPermissions();
+  const { toast } = useToast();
   
   const [currentView, setCurrentView] = useState<AppView>('overview');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -57,8 +59,35 @@ const MainApp: React.FC = () => {
     }
   };
 
-  const handleCreateProject = () => {
-    setCurrentView('create');
+  const handleCreateProject = async () => {
+    const newProjectData: Omit<Project, 'id' | 'lastUpdatedByName' | 'lastUpdatedAt'> = {
+      nome: 'Novo Projeto',
+      areaNegocio: '',
+      inovacaoMelhoria: 'Melhoria',
+      timeTI: '',
+      sponsor: '',
+      productOwner: '',
+      gerenteProjetos: '',
+      liderProjetosTI: '',
+      escopo: [],
+      objetivos: [],
+      etapasExecutadas: [],
+      proximasEtapas: [],
+      cronograma: [],
+      pontosAtencao: [],
+      estrategicoTatico: 'Tático',
+    };
+
+    try {
+      await createProject(newProjectData);
+      toast({
+        title: "Sucesso!",
+        description: "Um novo projeto foi criado e adicionado à lista.",
+      });
+    } catch (error) {
+      // useProjects hook already shows a toast on error
+      console.error("Falha ao criar o projeto:", error);
+    }
   };
 
   const renderCurrentView = () => {
