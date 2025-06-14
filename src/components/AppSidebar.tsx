@@ -9,7 +9,8 @@ import {
   SidebarHeader,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Home, LayoutDashboard, Users } from 'lucide-react';
+import { Home, PieChart, UsersRound } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type AppView = 'overview' | 'detail' | 'report' | 'dashboard' | 'users';
 
@@ -28,6 +29,10 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   canManageUsers,
   currentView
 }) => {
+  const isOverviewActive = ['overview', 'detail', 'report'].includes(currentView);
+  const isDashboardActive = currentView === 'dashboard';
+  const isUsersActive = currentView === 'users';
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-2 hidden md:flex items-center group-data-[state=expanded]:border-b">
@@ -36,21 +41,36 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       <SidebarContent>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={onShowOverview} isActive={['overview', 'detail', 'report'].includes(currentView)} tooltip="Início">
-              <Home />
+            <SidebarMenuButton onClick={onShowOverview} isActive={isOverviewActive} tooltip="Início">
+              <Home className={cn(
+                "transition-colors",
+                isOverviewActive
+                  ? "text-sidebar-accent-foreground"
+                  : "text-blue-500 group-hover/menu-item:text-sidebar-accent-foreground"
+              )} />
               <span>Início</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={onShowDashboard} isActive={currentView === 'dashboard'} tooltip="Dashboard">
-              <LayoutDashboard />
+            <SidebarMenuButton onClick={onShowDashboard} isActive={isDashboardActive} tooltip="Dashboard">
+              <PieChart className={cn(
+                "transition-colors",
+                isDashboardActive
+                  ? "text-sidebar-accent-foreground"
+                  : "text-green-500 group-hover/menu-item:text-sidebar-accent-foreground"
+              )} />
               <span>Dashboard</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           {canManageUsers && (
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={onShowUserManagement} isActive={currentView === 'users'} tooltip="Usuários">
-                <Users />
+              <SidebarMenuButton onClick={onShowUserManagement} isActive={isUsersActive} tooltip="Usuários">
+                <UsersRound className={cn(
+                  "transition-colors",
+                  isUsersActive
+                    ? "text-sidebar-accent-foreground"
+                    : "text-purple-500 group-hover/menu-item:text-sidebar-accent-foreground"
+                )} />
                 <span>Usuários</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
