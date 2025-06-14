@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -164,19 +165,21 @@ const ProtectedRoute: React.FC = () => {
   return (
     <>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full bg-gray-50">
-          <AppSidebar
-            onShowDashboard={handleShowDashboard}
-            onShowUserManagement={handleShowUserManagement}
-            canManageUsers={canManageUsers}
-            currentView={currentView}
-          />
-          <SidebarInset>
-            <ProjectHeader />
-            <div className="p-4 sm:p-6">
-              {renderCurrentView()}
-            </div>
-          </SidebarInset>
+        <div className="flex flex-col min-h-screen w-full bg-gray-50">
+          <ProjectHeader />
+          <div className="flex flex-1 relative overflow-hidden">
+            <AppSidebar
+              onShowDashboard={handleShowDashboard}
+              onShowUserManagement={handleShowUserManagement}
+              canManageUsers={canManageUsers}
+              currentView={currentView}
+            />
+            <SidebarInset className="flex-1 overflow-y-auto">
+              <div className="p-4 sm:p-6">
+                {renderCurrentView()}
+              </div>
+            </SidebarInset>
+          </div>
         </div>
       </SidebarProvider>
       <SetPasswordModal 
