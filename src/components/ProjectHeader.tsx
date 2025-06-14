@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { LogOut, User, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { UserProfileModal } from './auth/UserProfileModal';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+
 export const ProjectHeader = () => {
   const {
     user,
@@ -13,6 +15,7 @@ export const ProjectHeader = () => {
   return <div className="border-b border-gray-200 bg-[#183989] my-0 mx-0 py-0 px-[5px] rounded-lg">
       <div className="flex justify-between items-center w-full bg-[#00050e]/[0.43] mx-0 my-0 py-0 px-0">
         <div className="flex items-center gap-2">
+          <SidebarTrigger className="text-white md:hidden" />
           <img src="/lovable-uploads/6002a9d0-aa98-4ed0-8082-a7e6ec5fc014.png" alt="Logo Araguaia" className="h-12 w-auto" />
           <img src="/lovable-uploads/20020c57-14d3-4551-ad46-f00eaccafa93.png" alt="IT Project Hub" className="h-28 object-contain" />
         </div>

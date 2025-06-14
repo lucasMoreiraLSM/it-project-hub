@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,16 +17,34 @@ import ResetPassword from '@/pages/ResetPassword';
 import AcceptInvite from '@/pages/AcceptInvite';
 import { SetPasswordModal } from '@/components/auth/SetPasswordModal';
 import { useToast } from '@/hooks/use-toast';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { AppSidebar } from './components/AppSidebar';
 
 type AppView = 'overview' | 'detail' | 'report' | 'dashboard' | 'users';
 
-const MainApp: React.FC = () => {
+const ProtectedRoute: React.FC = () => {
+  const { user, loading, signOut } = useAuth();
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
   const { projects, loading: projectsLoading, createProject, updateProject, deleteProject, refetch } = useProjects();
   const { canManageUsers } = useUserPermissions();
   const { toast } = useToast();
   
   const [currentView, setCurrentView] = useState<AppView>('overview');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+  useEffect(() => {
+    if (user && !loading && user.profile?.password_set === false) {
+      setShowSetPasswordModal(true);
+    }
+  }, [user, loading]);
+
+  const handlePasswordSet = () => {
+    setShowSetPasswordModal(false);
+  };
+
+  const handleModalClose = () => {
+    signOut();
+  };
 
   const handleSelectProject = (project: Project) => {
     setSelectedProject(project);
@@ -85,7 +104,6 @@ const MainApp: React.FC = () => {
         description: "Um novo projeto foi criado e adicionado à lista.",
       });
     } catch (error) {
-      // useProjects hook already shows a toast on error
       console.error("Falha ao criar o projeto:", error);
     }
   };
@@ -134,34 +152,6 @@ const MainApp: React.FC = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <ProjectHeader />
-      {renderCurrentView()}
-    </div>
-  );
-};
-
-const ProtectedRoute: React.FC = () => {
-  const { user, loading, signOut } = useAuth();
-  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
-
-  useEffect(() => {
-    if (user && !loading && user.profile?.password_set === false) {
-      setShowSetPasswordModal(true);
-    }
-  }, [user, loading]);
-
-  const handlePasswordSet = () => {
-    setShowSetPasswordModal(false);
-    // After success, useAuth will eventually update, or a page reload will fix the state.
-  };
-
-  const handleModalClose = () => {
-    // If user closes modal without setting password, log them out to enforce the rule.
-    signOut();
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -176,7 +166,22 @@ const ProtectedRoute: React.FC = () => {
 
   return (
     <>
-      <MainApp />
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full bg-gray-50">
+          <AppSidebar
+            onShowDashboard={handleShowDashboard}
+            onShowUserManagement={handleShowUserManagement}
+            canManageUsers={canManageUsers}
+            currentView={currentView}
+          />
+          <SidebarInset>
+            <ProjectHeader />
+            <div className="p-4 sm:p-6">
+              {renderCurrentView()}
+            </div>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
       <SetPasswordModal 
         isOpen={showSetPasswordModal}
         onClose={handleModalClose}
