@@ -1,12 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfileForm } from '@/hooks/useUserProfileForm';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -15,142 +14,12 @@ interface UserProfileModalProps {
 
 export const UserProfileModal = ({ isOpen, onClose }: UserProfileModalProps) => {
   const { user } = useAuth();
-  const [formData, setFormData] = useState({
-    nome: '',
-    email: '',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (user && isOpen) {
-      setFormData(prev => ({
-        ...prev,
-        email: user.email || '',
-        nome: user.profile?.nome || ''
-      }));
-    }
-  }, [user, isOpen]);
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const validateForm = () => {
-    if (!formData.nome.trim()) {
-      toast({
-        title: "Erro",
-        description: "Nome é obrigatório.",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (!formData.email.trim()) {
-      toast({
-        title: "Erro",
-        description: "E-mail é obrigatório.",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
-      toast({
-        title: "Erro",
-        description: "As senhas não coincidem.",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (formData.newPassword && formData.newPassword.length < 6) {
-      toast({
-        title: "Erro",
-        description: "A nova senha deve ter pelo menos 6 caracteres.",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-    
-    setLoading(true);
-    
-    try {
-      // Atualizar nome nos metadados do usuário
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { nome: formData.nome }
-      });
-      
-      if (updateError) throw updateError;
-
-      // Atualizar nome na tabela de perfis
-      if (user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ nome: formData.nome, updated_at: new Date().toISOString() })
-          .eq('id', user.id);
-          
-        if (profileError) throw profileError;
-      }
-
-      // Atualizar e-mail se mudou
-      if (formData.email !== user?.email) {
-        const { error: emailError } = await supabase.auth.updateUser({
-          email: formData.email
-        });
-        
-        if (emailError) throw emailError;
-        
-        toast({
-          title: "Atenção",
-          description: "Um e-mail de confirmação foi enviado para o novo endereço."
-        });
-      }
-
-      // Atualizar senha se fornecida
-      if (formData.newPassword) {
-        const { error: passwordError } = await supabase.auth.updateUser({
-          password: formData.newPassword
-        });
-        
-        if (passwordError) throw passwordError;
-      }
-
-      toast({
-        title: "Sucesso",
-        description: "Perfil atualizado com sucesso!"
-      });
-      
-      // Limpar campos de senha
-      setFormData(prev => ({
-        ...prev,
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      }));
-      
-      onClose();
-    } catch (error: any) {
-      toast({
-        title: "Erro",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    formData,
+    loading,
+    handleInputChange,
+    handleSubmit
+  } = useUserProfileForm(user, isOpen, onClose);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
