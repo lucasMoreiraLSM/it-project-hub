@@ -164,7 +164,7 @@ const ProtectedRoute: React.FC = () => {
 
   return (
     <>
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={false}>
         <div className="flex flex-col min-h-screen w-full bg-gray-50">
           <ProjectHeader />
           <div className="flex flex-1 relative overflow-hidden">
