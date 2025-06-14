@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Project } from '@/types/project';
 import { ProjectDetailHeader } from './project-detail/ProjectDetailHeader';
@@ -53,7 +52,6 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         <ProjectDetailHeader
-          canEdit={isEditMode}
           isOwnLock={isOwnLock}
           isLoading={isLoading}
           onBack={handleBack}

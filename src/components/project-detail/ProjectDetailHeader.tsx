@@ -1,11 +1,9 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, Lock, Clock, Edit, Save } from 'lucide-react';
 
 interface ProjectDetailHeaderProps {
-  canEdit: boolean;
   isOwnLock: boolean;
   isLoading?: boolean;
   onBack: () => void;
@@ -22,7 +20,6 @@ const formatDate = (dateString?: string) => {
 };
 
 export const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
-  canEdit,
   isOwnLock,
   isLoading = false,
   onBack,
@@ -71,7 +68,7 @@ export const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
         </div>
       </div>
 
-      {canEdit && <Alert className="mb-6">
+      {isEditMode && <Alert className="mb-6">
           <Lock className="h-4 w-4" />
           <AlertDescription>
             Você está editando este projeto. O bloqueio será renovado automaticamente enquanto você estiver ativo.
