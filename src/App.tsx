@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -141,11 +140,9 @@ const ProtectedRoute: React.FC = () => {
             onSelectProject={handleSelectProject}
             onUpdateProjects={() => {}}
             onShowReport={handleShowReport}
-            onShowDashboard={handleShowDashboard}
             onCreateProject={handleCreateProject}
             onDeleteProject={deleteProject}
             onRefreshProjects={refetch}
-            onShowUserManagement={handleShowUserManagement}
             loading={projectsLoading}
           />
         );
