@@ -138,11 +138,9 @@ const Index = () => {
         onSelectProject={handleSelectProject}
         onUpdateProjects={() => {}} // Não usado mais, useProjects gerencia o estado
         onShowReport={handleShowReport}
-        onShowDashboard={handleShowDashboard}
         onCreateProject={handleCreateProject}
         onDeleteProject={deleteProject}
         onRefreshProjects={refetch}
-        onShowUserManagement={handleShowUserManagement}
         loading={projectsLoading}
       />
     </div>
