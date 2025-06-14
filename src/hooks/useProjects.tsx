@@ -12,6 +12,7 @@ export const useProjects = () => {
   const { user } = useAuth();
 
   const fetchProjects = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('projetos')
