@@ -20,35 +20,34 @@ const AcceptInvite = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.hash.substring(1));
     const accessToken = params.get('access_token');
-    const refreshToken = params.get('refresh_token');
 
-    if (accessToken && refreshToken) {
-      supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      }).then(({ data, error }) => {
-        if (error || !data.session?.user) {
-          toast({
-            title: 'Erro',
-            description: 'O link de convite é inválido ou expirou.',
-            variant: 'destructive',
-          });
-          navigate('/login');
-        } else {
-          const user = data.session.user;
-          setEmail(user.email || '');
-          setNome(user.user_metadata.nome || '');
-          navigate('/accept-invite', { replace: true });
-        }
+    // Se não houver token de acesso na URL, o link é inválido.
+    if (!accessToken) {
+      toast({
+        title: 'Link Inválido',
+        description: 'O link de convite parece estar quebrado ou incompleto. Por favor, use o link do seu e-mail.',
+        variant: 'destructive',
       });
-    } else {
+      navigate('/login');
+      return;
+    }
+
+    // Usamos o token para obter os dados do usuário sem iniciar uma sessão.
+    supabase.auth.getUser(accessToken).then(({ data: { user }, error }) => {
+      if (error || !user) {
         toast({
-            title: 'Link Inválido',
-            description: 'O link de convite parece estar quebrado ou incompleto.',
-            variant: 'destructive',
+          title: 'Erro',
+          description: 'O link de convite é inválido ou expirou.',
+          variant: 'destructive',
         });
         navigate('/login');
-    }
+      } else {
+        setEmail(user.email || '');
+        if (user.user_metadata && user.user_metadata.nome) {
+          setNome(user.user_metadata.nome);
+        }
+      }
+    });
   }, [navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,14 +81,38 @@ const AcceptInvite = () => {
     }
 
     setLoading(true);
+
+    const params = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+
+    if (!accessToken || !refreshToken) {
+      toast({
+        title: 'Erro de Sessão',
+        description: 'Seu link de convite expirou ou é inválido. Por favor, tente novamente a partir do e-mail.',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      navigate('/login');
+      return;
+    }
     
     try {
-      const { error } = await supabase.auth.updateUser({
+      // 1. Inicia a sessão com os tokens do link
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+      
+      if (sessionError) throw new Error('Falha ao autenticar. O link pode ter expirado.');
+      
+      // 2. Com o usuário autenticado, atualiza a senha e o nome
+      const { error: updateError } = await supabase.auth.updateUser({
         password: password,
         data: { nome: nome }
       });
       
-      if (error) throw error;
+      if (updateError) throw updateError;
       
       toast({
         title: "Sucesso",
@@ -99,7 +122,7 @@ const AcceptInvite = () => {
       navigate('/');
     } catch (error: any) {
       toast({
-        title: "Erro",
+        title: "Erro ao finalizar cadastro",
         description: error.message,
         variant: "destructive"
       });
