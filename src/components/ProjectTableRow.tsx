@@ -84,15 +84,15 @@ export const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
       <TableCell className="text-sm max-w-[120px] truncate" title={project.gerenteProjetos}>
         {project.gerenteProjetos}
       </TableCell>
-      <TableCell className="text-center px-0">
-        <Badge variant={project.inovacaoMelhoria === 'Inovação' ? 'default' : 'secondary'} className="text-xs mx-0 px-[25px]">
-          {project.inovacaoMelhoria === 'Inovação' ? 'Inov' : 'Melh'}
+      <TableCell className="text-center">
+        <Badge variant={project.inovacaoMelhoria === 'Inovação' ? 'default' : 'secondary'}>
+          {project.inovacaoMelhoria}
         </Badge>
       </TableCell>
       <TableCell className="text-center text-sm">{statusGeral}</TableCell>
       <TableCell className="text-center">
-        <Badge variant={project.estrategicoTatico === 'Estratégico' ? 'default' : 'outline'} className="text-xs px-[20px]">
-          {project.estrategicoTatico === 'Estratégico' ? 'Estr' : 'Tát'}
+        <Badge variant={project.estrategicoTatico === 'Estratégico' ? 'default' : 'outline'}>
+          {project.estrategicoTatico}
         </Badge>
       </TableCell>
       <TableCell className="text-center">

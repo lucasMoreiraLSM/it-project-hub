@@ -42,9 +42,9 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                 <TableHead className="w-[100px]">Time TI</TableHead>
                 <TableHead className="w-[120px]">Líder TI</TableHead>
                 <TableHead className="w-[120px]">Gerente Projetos</TableHead>
-                <TableHead className="w-[90px] text-center">Tipo</TableHead>
+                <TableHead className="w-[120px] text-center">Tipo</TableHead>
                 <TableHead className="w-[90px] text-center">Status Geral</TableHead>
-                <TableHead className="w-[90px] text-center">Classificação</TableHead>
+                <TableHead className="w-[120px] text-center">Classificação</TableHead>
                 <TableHead className="w-[120px] text-center">Ações</TableHead>
               </TableRow>
             </TableHeader>
